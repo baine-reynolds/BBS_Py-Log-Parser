@@ -3,12 +3,20 @@ import os, fnmatch
 
 class Init:
     def parse_input():
+        '''
+        Reads in attributes during run time and sets usage flags appropriately.
+        '''
         parser = OptionParser()
         parser.add_option('-d', '--directory', dest='filepath', help="Path to access logs")
+        parser.add_option('-j', '--json', dest='json', default=False, action="store_true", help='Exports raw data to json rather than graphing')
         options, args = parser.parse_args()
         return options, args
 
     def validate_path(path):
+        '''
+        Accepts the file path given to ensure that atleast 1 file matches the access log naming convention.
+        Returns a list of full paths (os.path) to each file located/matched to "atlassian-bitbucket-access*".
+        '''
         if path is not None:
             all_files = []
             for root, dirs, files in os.walk(path):
