@@ -86,8 +86,8 @@ class Parser:
             {"YYYY-MM-DD HH": [parsed_file, file_statistics], "YYYY-MM-DD HH+1": [parsed_file, file_statistics], ...}
 
             '''
-            all_parsed.append(thread.result())
-        return compile_results(all_parsed)
+            all_parsed_logs.append(thread.result())
+        return Parser.compile_results(all_parsed_logs)
 
     def parse_log(path_to_access_log):
         '''
@@ -165,7 +165,7 @@ class Parser:
                     git_op = split[10]
 
                     parsed_timestamp = timestamp.split(':')[0]  # From: "2020-04-27 14:21:23,359" To: "2020-04-27 14"
-                    parsed_action = identify_action(protocol, request_id, action, status_code, git_op)
+                    parsed_action = Parser.identify_action(protocol, request_id, action, status_code, git_op)
 
                     if file_parsed[parsed_timestamp]:
                         # concatenate the existing values for that hour with this line
@@ -211,9 +211,9 @@ class Parser:
                             file_statistics['repo_stats'][repo_identifier][parsed_action['op_action']] += 1
 
                     # file_statistics['operations'] increments
-                    if repo_interaction == True and "http" in protocol:
+                    if parsed_action['git_op'] == "http":
                         file_statistics['operations']['git_http'] += 1
-                    elif repo_interaction == True and "ssh" in protocol:
+                    elif parsed_action['git_op'] == "ssh":
                         file_statistics['operations']['git_ssh'] += 1
                     elif parsed_action['op_action'] == 'rest':
                         file_statistics['operations']['rest'] += 1
@@ -230,7 +230,7 @@ class Parser:
                 else:
                     print(f"Could not match against the line:\n\t{line}\n")
 
-        file_summarized = merge_hours(file_parsed)
+        file_summarized = Parser.merge_hours(file_parsed)
         return file_summarized, file_statistics
 
     def identify_action(protocol, request_id, action, status_code, git_op):
@@ -256,13 +256,12 @@ class Parser:
             }
         """
         op_action = "invalid"
-        repo_detail = "invalid"
         git_op = ""
 
         concurrent_connections = int(request_id.split('x')[3])
 
         actions = action.split(' ')
-        if "http" in str(protocol.lower()):
+        if "http" in str(protocol).lower():
 
             op_type = actions[2].lower  # ignoring get vs post vs delete for now
 
@@ -334,7 +333,7 @@ class Parser:
                 op_action = "web_ui"
             else:
                 print(f"Cannot parse line, please update Parser.identify_action with appropreiate use case for:\n{op_type}")
-        elif "ssh" in str(protocol.lower()):
+        elif "ssh" in str(protocol).lower():
             git_op = "ssh"
             if "push" in git_op:
                 op_action = "push"
@@ -495,8 +494,8 @@ class Parser:
                       }
 
         for log_result in all_logs:
-            file_summarized = log[0]
-            file_statistics = log[1]
+            file_summarized = log_result[0]
+            file_statistics = log_result[1]
 
             # If timestamp exists in two logs, compile the results, else, append result set to dict{hour_breakdown}
             for timestamp, hour_summary in file_summarized:
