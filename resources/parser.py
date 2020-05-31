@@ -497,13 +497,32 @@ class Parser:
         for log_result in all_logs:
             file_summarized = log[0]
             file_statistics = log[1]
-            
+
             # If timestamp exists in two logs, compile the results, else, append result set to dict{hour_breakdown}
-
-
+            for timestamp, hour_summary in file_summarized:
+                if hour_breakdown[timestamp]:
+                    # already exists, update existing with current
+                    hour_breakdown[timestamp]['total_clones'] += hour_summary['total_clones']
+                    hour_breakdown[timestamp]['total_clone_misses'] += hour_summary['total_clone_misses']
+                    hour_breakdown[timestamp]['total_shallow_clones'] += hour_summary['total_shallow_clones']
+                    hour_breakdown[timestamp]['total_shallow_clone_misses'] += hour_summary['total_shallow_clone_misses']
+                    hour_breakdown[timestamp]['total_fetches'] += hour_summary['total_fetches']
+                    hour_breakdown[timestamp]['total_fetch_misses'] += hour_summary['total_fetch_misses']
+                    hour_breakdown[timestamp]['total_ref_ads'] += hour_summary['total_ref_ads']
+                    hour_breakdown[timestamp]['total_ref_ad_miss'] += hour_summary['total_ref_ad_miss']
+                    hour_breakdown[timestamp]['total_pushes'] += hour_summary['total_pushes']
+                    hour_breakdown[timestamp]['total_rest_calls'] += hour_summary['total_rest_calls']
+                    hour_breakdown[timestamp]['total_filesystem_calls'] += hour_summary['total_filesystem_calls']
+                    hour_breakdown[timestamp]['total_webui_calls'] += hour_summary['total_webui_calls']
+                    hour_breakdown[timestamp]['total_git_ssh_operations'] += hour_summary['total_git_ssh_operations']
+                    hour_breakdown[timestamp]['total_git_http_operations'] += hour_summary['total_git_http_operations']
+                    if hour_summary['highest_seen_concurrent_operations'] > hour_breakdown[timestamp]['highest_seen_concurrent_operations']:
+                        hour_breakdown[timestamp]['highest_seen_concurrent_operations'] = hour_summary['highest_seen_concurrent_operations']
+                else:
+                    hour_breakdown[timestamp] = hour_summary
 
             # Compile repo_stats
-
+            ##### Build out based on file_statistics ####################################
 
 
             # Compile Operations stats
