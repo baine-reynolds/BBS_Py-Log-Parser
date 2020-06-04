@@ -72,7 +72,7 @@ class Parser:
                              "filesystem": call_counter
             }
         '''
-        executor = concurrent.futures.ThreadPoolExecutor()
+        executor = concurrent.futures.ProcessPoolExecutor()
         tasks = []  # storing individual thread details
         all_parsed_logs = []  # all dictionaries that will be compiled later
 
@@ -145,6 +145,8 @@ class Parser:
                 }
         '''
         file_parsed = {}
+        default_repo = {"clone": 0, "clone_miss": 0, "shallow": 0, "shallow_miss": 0,
+                        "fetch": 0, "fetch_miss": 0, "refs": 0, "refs_miss": 0, "push": 0 }
         file_statistics = {"repo_stats": {}, "operations": {"git_http": 0, "git_ssh": 0, "rest": 0, "web_ui": 0, "filesystem": 0}}
         #output_line_indicators = ['o@', 'o*']
         with open(path_to_access_log, 'r') as log:
@@ -163,10 +165,10 @@ class Parser:
                         action = split[5]
                         #request_details = split[6]  # not used
                         status_code = split[7]
-                        git_op = split[10]
+                        labels = split[10]
 
                         parsed_timestamp = timestamp.split(':')[0]  # From: "2020-04-27 14:21:23,359" To: "2020-04-27 14"
-                        parsed_action = Parser.identify_action(protocol, request_id, action, status_code, git_op)
+                        parsed_action = Parser.identify_action(protocol, request_id, action, status_code, labels)
 
                         if parsed_timestamp in file_parsed.keys():
                             # concatenate the existing values for that hour with this line
@@ -182,12 +184,14 @@ class Parser:
                             SSH: SSH - git-upload-pack '/project_key/repo_slug.git'
                         '''
                         repo_identifier = None
-                        if parsed_action['git_op'] == "http":
+                        if parsed_action['git_type'] == "http":
                             # look for the repo after the POST/GET and trim unnecessary info
-                            repo_identifier = action.split(' ')[1].split(".git")[0].strip("/scm/")
-                        elif parsed_action['git_op'] == "ssh":
+                            temp = action.split("/scm/")[1].split("/")
+                            repo_identifier = str.join("/", (temp[0], temp[1])).split(".git")[0].strip("'").lower()
+                        elif parsed_action['git_type'] == "ssh":
                             # look for the repo within single quotes and strip off the trailing ".git'"
-                            repo_identifier = action.split("'")[1].split(".git")[0]
+                            temp = action.split("'/")[1].split("/")
+                            repo_identifier = str.join("/", (temp[0], temp[1])).split(".git")[0].strip("'").lower()
                         else:
                             pass # Not a git operation
 
@@ -197,22 +201,13 @@ class Parser:
                             # if repo doesn't yet exist, initialize it
                             if parsed_action['op_action'] != "invalid":
                                 if repo_identifier not in file_statistics['repo_stats'].keys():
-                                    file_statistics['repo_stats'][repo_identifier] = {"clone": 0,
-                                                                                    "clone_miss": 0,
-                                                                                    "shallow": 0,
-                                                                                    "shallow_miss": 0,
-                                                                                    "fetch": 0,
-                                                                                    "fetch_miss": 0,
-                                                                                    "refs": 0,
-                                                                                    "refs_miss": 0,
-                                                                                    "push": 0
-                                                                                    }
+                                    file_statistics['repo_stats'][repo_identifier] = default_repo.copy()
                                 file_statistics['repo_stats'][repo_identifier][parsed_action['op_action']] += 1                                                    
 
                         # file_statistics['operations'] increments
-                        if parsed_action['git_op'] == "http":
+                        if parsed_action['git_type'] == "http":
                             file_statistics['operations']['git_http'] += 1
-                        elif parsed_action['git_op'] == "ssh":
+                        elif parsed_action['git_type'] == "ssh":
                             file_statistics['operations']['git_ssh'] += 1
                         elif parsed_action['op_action'] == 'rest':
                             file_statistics['operations']['rest'] += 1
@@ -235,14 +230,14 @@ class Parser:
         file_summarized = Parser.merge_hours(file_parsed)
         return file_summarized, file_statistics
 
-    def identify_action(protocol, request_id, action, status_code, git_op):
+    def identify_action(protocol, request_id, action, status_code, labels):
         """
         Accepts the following access log fields:
             str(protocol),
             str(request_id),
             str(action),
             str(status_code),
-            str(git_op)
+            str(labels)
 
         Returns a dict{identified_action} containing 2 key/value pairs:
             dict{identified_action}
@@ -257,14 +252,17 @@ class Parser:
             "max_connections": int(value)
             }
         """
-        #print(f"Prototol: {protocol}\nRequest_id: {request_id}\nAction: {action}\nStatus Code: {status_code}\nGit Operation: {git_op}")
+        #print(f"Prototol: {protocol}\nRequest_id: {request_id}\nAction: {action}\nStatus Code: {status_code}\nGit Operation: {labels}")
         op_action = "invalid"
-        git_op = ""
+        git_type = ""
 
         concurrent_connections = int(request_id.split('x')[3])
 
         actions = action.split(' ')
-        if "http" in str(protocol).lower():
+        if labels == "-":
+            # invalid/incomplete request
+            pass
+        elif "http" in str(protocol).lower():
 
             op_type = actions[1].lower()  # ignoring get vs post vs delete for now
             if [x for x in ["/favicon.ico", "/avatar.png"] if(x in op_type)]: 
@@ -278,51 +276,55 @@ class Parser:
                 op_action = "web_ui"
             elif "/scm/" in op_type:
                 # git operation
-                git_op = "http"
+                git_type = "http"
                 if status_code == "-":
                     pass
                 elif int(status_code) in range(200,299):
-                    if "push" in op_type:
+                    if "push" in labels:
                         op_action = "push"
-                    elif "clone" in op_type:
-                        if "shallow" in op_type:
-                            if "miss" in op_type:
+                    elif "clone" in labels:
+                        if "shallow" in labels:
+                            if "miss" in labels:
                                 op_action = "shallow_miss"
-                            elif "hit" in op_type:
+                            elif "hit" in labels:
                                 op_action = "shallow"
                             else:
-                                print(f"Unknown state, skipping. Code 10000\n{action}")
+                                print(f"Unknown state, skipping. Code 10000\n{protocol} | {action} | {labels}")
                                 op_action = "invalid"
                         else: # non-shallow
-                            if "miss" in op_type:
+                            if "miss" in labels:
                                 op_action = "clone_miss"
-                            elif "hit" in op_type:
+                            elif "hit" in labels:
                                 op_action = "clone"
                             else:
-                                print(f"Unknown state, skipping. Code 10001\n{action}")
-                    elif "fetch" in op_type:
-                        if "miss" in op_type:
+                                print(f"Unknown state, skipping. Code 10001\n{protocol} | {action} | {labels}")
+                    elif "fetch" in labels:
+                        if "miss" in labels:
                             op_action = "fetch_miss"
-                        elif "hit" in op_type:
+                        elif "hit" in labels:
                             op_action = "fetch"
-                        elif "bypass" in op_type:
+                        elif "bypass" in labels:
                             # not sure   #############################################################
                             pass
                         else:
-                            print(f"Unknown state, skipping. Code 10002\n{action}")
-                    elif "refs" in op_type:
-                        if "miss" in op_type:
+                            print(f"Unknown state, skipping. Code 10002\n{protocol} | {action} | {labels}")
+                    elif "refs" in labels:
+                        if "miss" in labels:
                             op_action = "refs_miss"
-                        elif "hit" in op_type:
+                        elif "hit" in labels:
                             op_action = "refs"
-                        elif "bypass" in op_type:
+                        elif "bypass" in labels:
                             # not sure   #############################################################
                             pass
+                        elif "cache" not in labels:
+                            op_action = "refs_miss"
                         else:
-#                            print(f"Unknown state, skipping. Code 10003\n{action}")
+                            print(f"Unknown state, skipping. Code 10003\n{protocol} | {action} | {labels}")
                             pass
+                    elif "capabilities" in labels:
+                        pass
                     else:
-#                        print(f"Unknown state, skipping. Code 10004\n{action}")
+                        print(f"Unknown state, skipping. Code 10004\n{protocol} | {action} | {labels}")
                         pass
                 else:
                     # parsing out initial auth requests as a single http git op takes 3 requests
@@ -341,58 +343,60 @@ class Parser:
             elif op_type == "/":  # Exact match root of webserver
                 op_action = "web_ui"
             else:
-#                print(f"Cannot parse line, please update Parser.identify_action with appropreiate use case for:\n{action}")
+                print(f"Cannot parse line, please update Parser.identify_action with appropreiate use case for:\n{protocol} | {action} | {labels}")
                 pass
         elif "ssh" in str(protocol).lower():
-            git_op = "ssh"
-            if "push" in action:
+            git_type = "ssh"
+            if "push" in labels:
                 op_action = "push"
-            elif  "clone" in action:
-                if "shallow" in action:
-                    if "miss" in action:
+            elif  "clone" in labels:
+                if "shallow" in labels:
+                    if "miss" in labels:
                         op_action = "shallow_miss"
-                    elif "hit" in action:
+                    elif "hit" in labels:
                         op_action = "shallow"
-                    elif "bypass" in action:
+                    elif "bypass" in labels:
                         # not sure   #############################################################
                         pass
                     else:
-                        print(f"unknown state, skipping. Code 10005\n{action}")
+                        print(f"unknown state, skipping. Code 10005\n{protocol} | {action} | {labels}")
                         pass
-                if "miss" in action:
+                if "miss" in labels:
                     op_action = "clone_miss"
-                elif "hit" in action:
+                elif "hit" in labels:
                     op_action = "clone"
-                elif "bypass" in action:
+                elif "bypass" in labels:
                     # not sure   #############################################################
                     pass
                 else:
-                    print(f"Unknown state, skipping. Code 10006\n{action}")
+                    print(f"Unknown state, skipping. Code 10006\n{protocol} | {action} | {labels}")
                     pass
-            elif "fetch" in action:
-                if "miss" in action:
+            elif "fetch" in labels:
+                if "miss" in labels:
                     op_action = "fetch_miss"
-                elif "hit" in action:
+                elif "hit" in labels:
                     op_action = "fetch"
-                elif "bypass" in action:
+                elif "bypass" in labels:
                     # not sure   #############################################################
                     pass
                 else:
-                    print(f"Unknown state, skipping. Code 10007\n{action}")
+                    print(f"Unknown state, skipping. Code 10007\n{protocol} | {action} | {labels}")
                     pass
-            elif "refs" in action:
-                if "miss" in action:
+            elif "refs" in labels:
+                if "miss" in labels:
                     op_action = "refs_miss"
-                elif "hit" in action:
+                elif "hit" in labels:
                     op_action = "refs"
-                elif "bypass" in action:
+                elif "bypass" in labels:
                     # not sure   #############################################################
-                    pass
+                    op_action = "refs"
+                elif "cache" not in labels:
+                    op_action = "refs_miss"
                 else:
-                    print(f"Unknown state, skipping. Code 10008\n{action}")
+                    print(f"Unknown state, skipping. Code 10008\n{protocol} | {action} | {labels}")
         else:
             print(f"Could not parse protocol: '{protocol}' properly")
-        identified_action = {"op_action": op_action, "git_op": git_op, "max_connections": concurrent_connections}
+        identified_action = {"op_action": op_action, "git_type": git_type, "max_connections": concurrent_connections}
         return identified_action
 
     def merge_hours(file_parsed):
@@ -453,7 +457,7 @@ class Parser:
                    }
         for hour_marker in file_parsed: 
             if hour_marker not in file_summarized.keys():
-                this_hour = default
+                this_hour = default.copy()
             else:
                 this_hour = file_summarized[hour_marker]
             for action in file_parsed[hour_marker]:
@@ -482,9 +486,9 @@ class Parser:
                 elif action['op_action'] == "web_ui":
                     this_hour['total_webui_calls'] += 1
 
-                if action['git_op'] == "ssh":
+                if action['git_type'] == "ssh":
                     this_hour['total_git_ssh_operations'] += 1
-                elif action['git_op'] == "http":
+                elif action['git_type'] == "http":
                     this_hour['total_git_http_operations'] += 1
 
                 if action['max_connections'] > this_hour['highest_seen_concurrent_operations']:
@@ -540,7 +544,7 @@ class Parser:
             for timestamp in single_file_summarized:
                 if timestamp not in all_hours.keys():
                     # initialize empty counters in all_hours is not exists
-                    all_hours[timestamp] = default_hour
+                    all_hours[timestamp] = default_hour.copy()
 
                 # already exists, update existing with current
                 all_hours[timestamp]['total_clones'] += single_file_summarized[timestamp]['total_clones']
@@ -564,7 +568,7 @@ class Parser:
             for repo_identifier in single_file_statistics['repo_stats']:
                 if repo_identifier not in all_repo_stats.keys():
                     # If the repo doesn't yet exist, initialize it
-                    all_repo_stats[repo_identifier] = default_repo
+                    all_repo_stats[repo_identifier] = default_repo.copy()
                 all_repo_stats[repo_identifier]['total_clones'] += single_file_statistics['repo_stats'][repo_identifier]['clone']
                 all_repo_stats[repo_identifier]['total_clone_misses'] += single_file_statistics['repo_stats'][repo_identifier]['clone_miss']
                 all_repo_stats[repo_identifier]['total_shallow_clones'] += single_file_statistics['repo_stats'][repo_identifier]['shallow']
