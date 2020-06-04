@@ -21,7 +21,7 @@ class Init:
             all_files = []
             for root, dirs, files in os.walk(path):
                 for name in files:
-                    if fnmatch.fnmatch("atlassian-bitbucket-access*", path):
+                    if fnmatch.fnmatch(name, "atlassian-bitbucket-access*"):
                         all_files.append(os.path.join(root, name))
             if len(all_files) > 0:
                 return all_files
