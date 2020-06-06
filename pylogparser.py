@@ -18,7 +18,7 @@ def main():
         export_json(hourly_breakdown, system_stats)
         exit("Created 'access_logs_parsed.json' in working directory")
     else:
-        Graph.graph_parsed(hourly_breakdown, system_stats)
+        Graph.graph_parsed(hourly_breakdown, system_stats, options.dark_mode)
         exit("Created pdfs in working directory")
 
 

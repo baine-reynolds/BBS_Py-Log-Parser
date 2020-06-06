@@ -7,8 +7,9 @@ class Init:
         Reads in attributes during run time and sets usage flags appropriately.
         '''
         parser = OptionParser()
-        parser.add_option('-d', '--directory', dest='filepath', help="Path to access logs")
+        parser.add_option('-p', '--path', dest='filepath', help="Path to access logs")
         parser.add_option('-j', '--json', dest='json', default=False, action="store_true", help='Exports raw data to json rather than graphing')
+        parser.add_option('-d', '--dark', dest='dark_mode', default=False, action="store_true", help='Sets Graphs to use dark backdrops')
         options, args = parser.parse_args()
         return options, args
 
