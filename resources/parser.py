@@ -8,40 +8,64 @@ class Parser:
         Returns dict{all_parsed_logs} and dict{system_stats}
 
             dict{all_parsed_logs}
-            { "YYYY-MM-DD HH": { "total_clones" = int(counter, default = 0),
-                                 "total_clone_misses" = int(counter, default = 0),
-                                 "total_shallow_clones" = int(counter, default = 0),
-                                 "total_shallow_clone_misses" = int(counter, default = 0),
-                                 "total_fetches" = int(counter, default = 0),
-                                 "total_fetch_misses" = int(counter, default = 0),
-                                 "total_ref_ads" = int(counter, default = 0),
-                                 "total_ref_ad_miss" = int(counter, default = 0),
-                                 "total_pushes" = int(counter, default = 0),
-                                 "total_rest_calls" = int(counter, default = 0),
-                                 "total_filesystem_calls" = int(counter, default = 0),
-                                 "total_webui_calls" = int(counter, default = 0),
-                                 "total_git_ssh_operations" = int(counter, default = 0),
-                                 "total_git_http_operations" = int(counter, default = 0),
-                                 "highest_seen_concurrent_operations" = int(counter, default = 0)
-                                },
-            "YYYY-MM-DD HH": { "total_clones" = int(counter, default = 0),
-                               "total_clone_misses" = int(counter, default = 0),
-                               "total_shallow_clones" = int(counter, default = 0),
-                               "total_shallow_clone_misses" = int(counter, default = 0),
-                               "total_fetches" = int(counter, default = 0),
-                               "total_fetch_misses" = int(counter, default = 0),
-                               "total_ref_ads" = int(counter, default = 0),
-                               "total_ref_ad_miss" = int(counter, default = 0),
-                               "total_pushes" = int(counter, default = 0),
-                               "total_rest_calls" = int(counter, default = 0),
-                               "total_filesystem_calls" = int(counter, default = 0),
-                               "total_webui_calls" = int(counter, default = 0),
-                               "total_git_ssh_operations" = int(counter, default = 0),
-                               "total_git_http_operations" = int(counter, default = 0),
-                               "highest_seen_concurrent_operations" = int(counter, default = 0)
-                             },
+            { YYYYMMDD: {
+                        HH: { 
+                              "total_clones" = int(counter, default = 0),
+                              "total_clone_misses" = int(counter, default = 0),
+                              "total_shallow_clones" = int(counter, default = 0),
+                              "total_shallow_clone_misses" = int(counter, default = 0),
+                              "total_fetches" = int(counter, default = 0),
+                              "total_fetch_misses" = int(counter, default = 0),
+                              "total_ref_ads" = int(counter, default = 0),
+                              "total_ref_ad_miss" = int(counter, default = 0),
+                              "total_pushes" = int(counter, default = 0),
+                              "total_rest_calls" = int(counter, default = 0),
+                              "total_filesystem_calls" = int(counter, default = 0),
+                              "total_webui_calls" = int(counter, default = 0),
+                              "total_git_ssh_operations" = int(counter, default = 0),
+                              "total_git_http_operations" = int(counter, default = 0),
+                              "highest_seen_concurrent_operations" = int(counter, default = 0)
+                              },
+                        HH: {
+                              "total_clones" = int(counter, default = 0),
+                              "total_clone_misses" = int(counter, default = 0),
+                              "total_shallow_clones" = int(counter, default = 0),
+                              "total_shallow_clone_misses" = int(counter, default = 0),
+                              "total_fetches" = int(counter, default = 0),
+                              "total_fetch_misses" = int(counter, default = 0),
+                              "total_ref_ads" = int(counter, default = 0),
+                              "total_ref_ad_miss" = int(counter, default = 0),
+                              "total_pushes" = int(counter, default = 0),
+                              "total_rest_calls" = int(counter, default = 0),
+                              "total_filesystem_calls" = int(counter, default = 0),
+                              "total_webui_calls" = int(counter, default = 0),
+                              "total_git_ssh_operations" = int(counter, default = 0),
+                              "total_git_http_operations" = int(counter, default = 0),
+                              "highest_seen_concurrent_operations" = int(counter, default = 0)
+                            },
+                            ...
+            { YYYYMMDD:
+                        {HH: { 
+                              "total_clones" = int(counter, default = 0),
+                              "total_clone_misses" = int(counter, default = 0),
+                              "total_shallow_clones" = int(counter, default = 0),
+                              "total_shallow_clone_misses" = int(counter, default = 0),
+                              "total_fetches" = int(counter, default = 0),
+                              "total_fetch_misses" = int(counter, default = 0),
+                              "total_ref_ads" = int(counter, default = 0),
+                              "total_ref_ad_miss" = int(counter, default = 0),
+                              "total_pushes" = int(counter, default = 0),
+                              "total_rest_calls" = int(counter, default = 0),
+                              "total_filesystem_calls" = int(counter, default = 0),
+                              "total_webui_calls" = int(counter, default = 0),
+                              "total_git_ssh_operations" = int(counter, default = 0),
+                              "total_git_http_operations" = int(counter, default = 0),
+                              "highest_seen_concurrent_operations" = int(counter, default = 0)
+                              },
+                            ...
+                        },
             ...
-            },
+            }
             dict{system_stats}
             {"repo_stats": { repo_identifier: { "total_clones" = int(counter, default = 0),
                                                 "total_clone_misses" = int(counter, default = 0),
@@ -94,22 +118,26 @@ class Parser:
         Accepts a single path to a log file
         Returns dict{file_summarized} **time sensitive** and dict{file_statistics} **time insensitive** where:
             file_summarized is a dict containing a summary of operations within each hour in the log
-                { "YYYY-MM-DD HH": { "total_clones" = int(counter, default = 0),
-                                 "total_clone_misses" = int(counter, default = 0),
-                                 "total_shallow_clones" = int(counter, default = 0),
-                                 "total_shallow_clone_misses" = int(counter, default = 0),
-                                 "total_fetches" = int(counter, default = 0),
-                                 "total_fetch_misses" = int(counter, default = 0),
-                                 "total_ref_ads" = int(counter, default = 0),
-                                 "total_ref_ad_miss" = int(counter, default = 0),
-                                 "total_pushes" = int(counter, default = 0),
-                                 "total_rest_calls" = int(counter, default = 0),
-                                 "total_filesystem_calls" = int(counter, default = 0),
-                                 "total_webui_calls" = int(counter, default = 0),
-                                 "total_git_ssh_operations" = int(counter, default = 0),
-                                 "total_git_http_operations" = int(counter, default = 0),
-                                 "highest_seen_concurrent_operations" = int(counter, default = 0)
+                { YYYYMMDDHH: {
+                               HH: {
+                                    "total_clones" = int(counter, default = 0),
+                                    "total_clone_misses" = int(counter, default = 0),
+                                    "total_shallow_clones" = int(counter, default = 0),
+                                    "total_shallow_clone_misses" = int(counter, default = 0),
+                                    "total_fetches" = int(counter, default = 0),
+                                    "total_fetch_misses" = int(counter, default = 0),
+                                    "total_ref_ads" = int(counter, default = 0),
+                                    "total_ref_ad_miss" = int(counter, default = 0),
+                                    "total_pushes" = int(counter, default = 0),
+                                    "total_rest_calls" = int(counter, default = 0),
+                                    "total_filesystem_calls" = int(counter, default = 0),
+                                    "total_webui_calls" = int(counter, default = 0),
+                                    "total_git_ssh_operations" = int(counter, default = 0),
+                                    "total_git_http_operations" = int(counter, default = 0),
+                                    "highest_seen_concurrent_operations" = int(counter, default = 0)
                                     },
+                               ...
+                               }
                   ...
                 }
             file_statistics is a dict containing "repo_stats" and "operations"
@@ -167,14 +195,21 @@ class Parser:
                         status_code = split[7]
                         labels = split[10]
 
-                        parsed_timestamp = timestamp.split(':')[0]  # From: "2020-04-27 14:21:23,359" To: "2020-04-27 14"
+                        #parsed_timestamp = timestamp.split(':')[0]  # From: "2020-04-27 14:21:23,359" To: "2020-04-27 14"
+                        day, hour = Parser.parse_timestamp(timestamp)
+
                         parsed_action = Parser.identify_action(protocol, request_id, action, status_code, labels)
 
-                        if parsed_timestamp in file_parsed.keys():
-                            # concatenate the existing values for that hour with this line
-                            file_parsed[parsed_timestamp].append(parsed_action)
+                        if day not in file_parsed.keys():
+                            # add dict for day as place holder
+                            file_parsed[day] = {}
                         else:
-                            file_parsed[parsed_timestamp] = [parsed_action]
+                            if hour not in file_parsed[day].keys():
+                                # add hour within day with a list, with the first value = parsed_action
+                                file_parsed[day][hour] = [parsed_action]
+                            else:
+                                # concatenate the existing values for that hour with this line
+                                file_parsed[day][hour].append(parsed_action)
 
                         # file_statistics['repo_stats'] increments
                         '''
@@ -216,19 +251,26 @@ class Parser:
                         elif parsed_action['op_action'] == 'filesystem':
                             file_statistics['operations']['filesystem'] += 1
 
-                    elif len(split) < 12:
-                        pass # broken line that is commonly found as start/end of a file.
-                        # Potentially worth counting for indication of issues but skipping for now.
-                    elif "o@" not in split[2] and "o*" not in split[2]:
-                        pass # skip input lines as they provide minimal information
-                    else:
-                        print(f"Could not match against the line:\n\t{line}\n")
                 except IndexError:
-                    #print(f"Following lines did not contain the expected output:\n{line}")
-                    pass # Drop incomplete lines
+                    pass # Drop incomplete lines and lines that don't match our search criteria
 
         file_summarized = Parser.merge_hours(file_parsed)
         return file_summarized, file_statistics
+
+    def parse_timestamp(timestamp):
+        # From: "2020-04-27 14:21:23,359" To: "2020-04-27 14"
+        '''
+        Accepts: string("YYYY-MM-DD HH:MM:SS,SSS)
+        Returns: 2 objects, int(day) and int(hour)
+            "day" = 7 digit int, YYYYMMDD
+            "hour" = 2 digit int, HH
+        '''
+        split = timestamp.split(' ')
+        day_temp = split[0].replace('-', '')
+        day = int(day_temp)
+        hour_temp = split[1].split(':')[0]
+        hour = int(hour_temp)
+        return day, hour
 
     def identify_action(protocol, request_id, action, status_code, labels):
         """
@@ -426,40 +468,42 @@ class Parser:
     def merge_hours(file_parsed):
         '''
         Accepts dict{file_parsed}
-            file_parsed is a dict who's keys are a str(parsed_timestamp) and values are a dict{parsed_action} from identify_action()
-                {
-                    "2020-05-17 01": [parsed_action1,
-                                      parsed_action2,
-                                      ...
-                                      ]
-                    "2020-05-17 02": [parsed_action1,
-                                      parsed_action2,
-                                      ...
-                                      ]
-                    "2020-05-17 03": [parsed_action1,
-                                      parsed_action2,
-                                      ...
-                                      ]
-                    ...
+            file_parsed is a dict who's keys are a int(day) and values are a dict{} who's keys are int(hour) containing a list of dict{parsed_action} from identify_action()
+                {YYYYMMDD: {HH: [parsed_action1,
+                                 parsed_action2,
+                                 ...
+                                ],
+                            HH: [parsed_action1,
+                                 parsed_action2,
+                                 ...
+                                ],
+                            HH: [parsed_action1,
+                                 parsed_action2,
+                                 ...
+                                ],
+                            ...
+                            }
                 }
         Returns dict{parsed_log}
-            { "YYYY-MM-DD HH": { "total_clones" = int(counter, default = 0),
-                                 "total_clone_misses" = int(counter, default = 0),
-                                 "total_shallow_clones" = int(counter, default = 0),
-                                 "total_shallow_clone_misses" = int(counter, default = 0),
-                                 "total_fetches" = int(counter, default = 0),
-                                 "total_fetch_misses" = int(counter, default = 0),
-                                 "total_ref_ads" = int(counter, default = 0),
-                                 "total_ref_ad_miss" = int(counter, default = 0),
-                                 "total_pushes" = int(counter, default = 0),
-                                 "total_rest_calls" = int(counter, default = 0),
-                                 "total_filesystem_calls" = int(counter, default = 0),
-                                 "total_webui_calls" = int(counter, default = 0),
-                                 "total_git_ssh_operations" = int(counter, default = 0),
-                                 "total_git_http_operations" = int(counter, default = 0),
-                                 "highest_seen_concurrent_operations" = int(counter, default = 0)
-                                },
-                ...
+            {YYYYMMDD: {HH: {"total_clones" = int(counter, default = 0),
+                             "total_clone_misses" = int(counter, default = 0),
+                             "total_shallow_clones" = int(counter, default = 0),
+                             "total_shallow_clone_misses" = int(counter, default = 0),
+                             "total_fetches" = int(counter, default = 0),
+                             "total_fetch_misses" = int(counter, default = 0),
+                             "total_ref_ads" = int(counter, default = 0),
+                             "total_ref_ad_miss" = int(counter, default = 0),
+                             "total_pushes" = int(counter, default = 0),
+                             "total_rest_calls" = int(counter, default = 0),
+                             "total_filesystem_calls" = int(counter, default = 0),
+                             "total_webui_calls" = int(counter, default = 0),
+                             "total_git_ssh_operations" = int(counter, default = 0),
+                             "total_git_http_operations" = int(counter, default = 0),
+                             "highest_seen_concurrent_operations" = int(counter, default = 0)
+                             },
+                        ...
+                        },
+            ...
             }
         '''
         file_summarized = {}
@@ -479,45 +523,32 @@ class Parser:
                     "total_git_http_operations": 0,
                     "highest_seen_concurrent_operations": 0 
                    }
-        for hour_marker in file_parsed: 
-            if hour_marker not in file_summarized.keys():
-                this_hour = default.copy()
-            else:
-                this_hour = file_summarized[hour_marker]
-            for action in file_parsed[hour_marker]:
-                if action['op_action'] == "clone":
-                    this_hour['total_clones'] += 1
-                elif action['op_action'] == "clone_miss":
-                    this_hour['total_clone_misses'] += 1
-                elif action['op_action'] == "shallow":
-                    this_hour['total_shallow_clones'] += 1
-                elif action['op_action'] == "shallow_miss":
-                    this_hour['total_shallow_clone_misses'] += 1
-                elif action['op_action'] == "fetch":
-                    this_hour['total_fetches'] += 1
-                elif action['op_action'] == "fetch_miss":
-                    this_hour['total_fetch_misses'] += 1
-                elif action['op_action'] == "refs":
-                    this_hour['total_ref_ads'] += 1
-                elif action['op_action'] == "refs_miss":
-                    this_hour['total_ref_ad_miss'] += 1
-                elif action['op_action'] == "push":
-                    this_hour['total_pushes'] += 1
-                elif action['op_action'] == "rest":
-                    this_hour['total_rest_calls'] += 1
-                elif action['op_action'] == "filesystem":
-                    this_hour['total_filesystem_calls'] += 1
-                elif action['op_action'] == "web_ui":
-                    this_hour['total_webui_calls'] += 1
 
-                if action['git_type'] == "ssh":
-                    this_hour['total_git_ssh_operations'] += 1
-                elif action['git_type'] == "http":
-                    this_hour['total_git_http_operations'] += 1
+        for day in file_parsed:
+            if day not in file_summarized.keys():
+                file_summarized[day] = {}
+            for hour in file_parsed[day]:
+                if hour not in file_summarized[day].keys():
+                    file_summarized[day][hour] = default.copy()
+                for action in file_parsed[day][hour]:
+                    if action['op_action'] == "clone": file_summarized[day][hour]['total_clones'] += 1
+                    elif action['op_action'] == "clone_miss": file_summarized[day][hour]['total_clone_misses'] += 1
+                    elif action['op_action'] == "shallow": file_summarized[day][hour]['total_shallow_clones'] += 1
+                    elif action['op_action'] == "shallow_miss": file_summarized[day][hour]['total_shallow_clone_misses'] += 1
+                    elif action['op_action'] == "fetch": file_summarized[day][hour]['total_fetches'] += 1
+                    elif action['op_action'] == "fetch_miss": file_summarized[day][hour]['total_fetch_misses'] += 1
+                    elif action['op_action'] == "refs": file_summarized[day][hour]['total_ref_ads'] += 1
+                    elif action['op_action'] == "refs_miss": file_summarized[day][hour]['total_ref_ad_miss'] += 1
+                    elif action['op_action'] == "push": file_summarized[day][hour]['total_pushes'] += 1
+                    elif action['op_action'] == "rest": file_summarized[day][hour]['total_rest_calls'] += 1
+                    elif action['op_action'] == "filesystem": file_summarized[day][hour]['total_filesystem_calls'] += 1
+                    elif action['op_action'] == "web_ui": file_summarized[day][hour]['total_webui_calls'] += 1
 
-                if action['max_connections'] > this_hour['highest_seen_concurrent_operations']:
-                    this_hour['highest_seen_concurrent_operations'] = action['max_connections']
-            file_summarized[hour_marker] = this_hour
+                    if action['git_type'] == "ssh": file_summarized[day][hour]['total_git_ssh_operations'] += 1
+                    elif action['git_type'] == "http": file_summarized[day][hour]['total_git_http_operations'] += 1
+
+                    if action['max_connections'] > file_summarized[day][hour]['highest_seen_concurrent_operations']:
+                        file_summarized[day][hour]['highest_seen_concurrent_operations'] = action['max_connections']
         return(file_summarized)
 
     def compile_results(all_logs):
@@ -525,7 +556,7 @@ class Parser:
         Accepts list[all_logs] where each item is a list containing [file_parsed, file_statistics] from parse_log()
 
         '''
-        all_hours = {}
+        all_days = {}
         all_repo_stats = {}
         default_hour = { "total_clones": 0,
                          "total_clone_misses": 0,
@@ -564,29 +595,31 @@ class Parser:
             single_file_summarized = log_result[0]
             single_file_statistics = log_result[1]
 
-            # If timestamp exists in two logs, compile the results, else, append result set to dict{all_hours}
-            for timestamp in single_file_summarized:
-                if timestamp not in all_hours.keys():
-                    # initialize empty counters in all_hours is not exists
-                    all_hours[timestamp] = default_hour.copy()
-
-                # already exists, update existing with current
-                all_hours[timestamp]['total_clones'] += single_file_summarized[timestamp]['total_clones']
-                all_hours[timestamp]['total_clone_misses'] += single_file_summarized[timestamp]['total_clone_misses']
-                all_hours[timestamp]['total_shallow_clones'] += single_file_summarized[timestamp]['total_shallow_clones']
-                all_hours[timestamp]['total_shallow_clone_misses'] += single_file_summarized[timestamp]['total_shallow_clone_misses']
-                all_hours[timestamp]['total_fetches'] += single_file_summarized[timestamp]['total_fetches']
-                all_hours[timestamp]['total_fetch_misses'] += single_file_summarized[timestamp]['total_fetch_misses']
-                all_hours[timestamp]['total_ref_ads'] += single_file_summarized[timestamp]['total_ref_ads']
-                all_hours[timestamp]['total_ref_ad_miss'] += single_file_summarized[timestamp]['total_ref_ad_miss']
-                all_hours[timestamp]['total_pushes'] += single_file_summarized[timestamp]['total_pushes']
-                all_hours[timestamp]['total_rest_calls'] += single_file_summarized[timestamp]['total_rest_calls']
-                all_hours[timestamp]['total_filesystem_calls'] += single_file_summarized[timestamp]['total_filesystem_calls']
-                all_hours[timestamp]['total_webui_calls'] += single_file_summarized[timestamp]['total_webui_calls']
-                all_hours[timestamp]['total_git_ssh_operations'] += single_file_summarized[timestamp]['total_git_ssh_operations']
-                all_hours[timestamp]['total_git_http_operations'] += single_file_summarized[timestamp]['total_git_http_operations']
-                if single_file_summarized[timestamp]['highest_seen_concurrent_operations'] > all_hours[timestamp]['highest_seen_concurrent_operations']:
-                    all_hours[timestamp]['highest_seen_concurrent_operations'] = single_file_summarized[timestamp]['highest_seen_concurrent_operations']
+            for day in single_file_summarized:  # maybe drop keys
+                if day not in all_days.keys():
+                    all_days[day] = {}
+                for hour in single_file_summarized[day]:
+                    if hour not in all_days[day].keys():
+                        # initialize zero'd counters for hour
+                        all_days[day][hour] = default_hour.copy()
+                    
+                    # already exists, update existing with current
+                    all_days[day][hour]['total_clones'] += single_file_summarized[day][hour]['total_clones']
+                    all_days[day][hour]['total_clone_misses'] += single_file_summarized[day][hour]['total_clone_misses']
+                    all_days[day][hour]['total_shallow_clones'] += single_file_summarized[day][hour]['total_shallow_clones']
+                    all_days[day][hour]['total_shallow_clone_misses'] += single_file_summarized[day][hour]['total_shallow_clone_misses']
+                    all_days[day][hour]['total_fetches'] += single_file_summarized[day][hour]['total_fetches']
+                    all_days[day][hour]['total_fetch_misses'] += single_file_summarized[day][hour]['total_fetch_misses']
+                    all_days[day][hour]['total_ref_ads'] += single_file_summarized[day][hour]['total_ref_ads']
+                    all_days[day][hour]['total_ref_ad_miss'] += single_file_summarized[day][hour]['total_ref_ad_miss']
+                    all_days[day][hour]['total_pushes'] += single_file_summarized[day][hour]['total_pushes']
+                    all_days[day][hour]['total_rest_calls'] += single_file_summarized[day][hour]['total_rest_calls']
+                    all_days[day][hour]['total_filesystem_calls'] += single_file_summarized[day][hour]['total_filesystem_calls']
+                    all_days[day][hour]['total_webui_calls'] += single_file_summarized[day][hour]['total_webui_calls']
+                    all_days[day][hour]['total_git_ssh_operations'] += single_file_summarized[day][hour]['total_git_ssh_operations']
+                    all_days[day][hour]['total_git_http_operations'] += single_file_summarized[day][hour]['total_git_http_operations']
+                    if single_file_summarized[day][hour]['highest_seen_concurrent_operations'] > all_days[day][hour]['highest_seen_concurrent_operations']:
+                        all_days[day][hour]['highest_seen_concurrent_operations'] = single_file_summarized[day][hour]['highest_seen_concurrent_operations']
 
             # Compile all_repo_stats
             for repo_identifier in single_file_statistics['repo_stats']:
@@ -611,4 +644,4 @@ class Parser:
             operations['filesystem'] += single_file_statistics['operations']['filesystem']
 
         log_stats = {'repo_stats': all_repo_stats, 'operations': operations}
-        return all_hours, log_stats
+        return all_days, log_stats
