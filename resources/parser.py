@@ -199,7 +199,7 @@ class Parser:
                             pass
                         else:
                             # if repo doesn't yet exist, initialize it
-                            if parsed_action['op_action'] != "invalid":
+                            if parsed_action['op_action'] != "":
                                 if repo_identifier not in file_statistics['repo_stats'].keys():
                                     file_statistics['repo_stats'][repo_identifier] = default_repo.copy()
                                 file_statistics['repo_stats'][repo_identifier][parsed_action['op_action']] += 1                                                    
@@ -246,40 +246,32 @@ class Parser:
                 "value" must be one of the following strings:
                 "clone", "clone_miss", "shallow", "shallow_miss",
                 "fetch", "fetch_miss", "refs", "refs_miss",
-                "push", "rest_api", "web_ui", "filesystem",
-                "invalid" (default)
+                "push", "rest", "web_ui", "filesystem",
+                "" (default)
                 default is only seen if the parsing failed to identify the action
             "max_connections": int(value)
             }
         """
         #print(f"Prototol: {protocol}\nRequest_id: {request_id}\nAction: {action}\nStatus Code: {status_code}\nGit Operation: {labels}")
-        op_action = "invalid"
+        op_action = ""
         git_type = ""
 
         concurrent_connections = int(request_id.split('x')[3])
 
         actions = action.split(' ')
-        if labels == "-":
-            # invalid/incomplete request
-            pass
-        elif "http" in str(protocol).lower():
-
+        if "http" in str(protocol).lower() and (str(status_code) != "404"): # in some cases, status_code can be "-" so converting to string prevents errors
             op_type = actions[1].lower()  # ignoring get vs post vs delete for now
-            if [x for x in ["/favicon.ico", "/avatar.png"] if(x in op_type)]: 
+            if [x for x in ["/favicon.ico", "/avatar.png", "/system/maintenance", "/unavailable", "/j_atl_security_check", "/j_atl_security_logout", 
+                            "/system/startup", "/getting-started", "/robots.txt"] if(x in op_type)]: 
                 # Throw out non-wanted data
                 pass
-            elif "/rest/api" in op_type:
-                # rest api interaction
-                op_action = "rest_api"
-            elif "/rest/" in op_type:
-                # internal REST like permissions
-                op_action = "web_ui"
-            elif "/scm/" in op_type:
-                # git operation
-                git_type = "http"
-                if status_code == "-":
+            #elif "/scm/" in op_type:
+            elif [x for x in ["/scm/", "/git/"] if (x in op_type)]:
+                if status_code == "-" or labels == "-":
                     pass
-                elif int(status_code) in range(200,299):
+                elif int(status_code) in range(200,299):  # http 200 range status code
+                    # git operation
+                    git_type = "http"
                     if "push" in labels:
                         op_action = "push"
                     elif "clone" in labels:
@@ -288,6 +280,11 @@ class Parser:
                                 op_action = "shallow_miss"
                             elif "hit" in labels:
                                 op_action = "shallow"
+                            elif "bypass" in labels:
+                                # not sure   #############################################################
+                                pass
+                            elif "cache" not in labels:
+                                op_action = "clone_miss"
                             else:
                                 print(f"Unknown state, skipping. Code 10000\n{protocol} | {action} | {labels}")
                                 op_action = "invalid"
@@ -296,6 +293,11 @@ class Parser:
                                 op_action = "clone_miss"
                             elif "hit" in labels:
                                 op_action = "clone"
+                            elif "bypass" in labels:
+                                # not sure   #############################################################
+                                pass
+                            elif "cache" not in labels:
+                                op_action = "clone_miss"
                             else:
                                 print(f"Unknown state, skipping. Code 10001\n{protocol} | {action} | {labels}")
                     elif "fetch" in labels:
@@ -306,6 +308,8 @@ class Parser:
                         elif "bypass" in labels:
                             # not sure   #############################################################
                             pass
+                        elif "cache" not in labels:
+                            op_action = "fetch_miss"
                         else:
                             print(f"Unknown state, skipping. Code 10002\n{protocol} | {action} | {labels}")
                     elif "refs" in labels:
@@ -321,29 +325,42 @@ class Parser:
                         else:
                             print(f"Unknown state, skipping. Code 10003\n{protocol} | {action} | {labels}")
                             pass
-                    elif "capabilities" in labels:
-                        pass
+                    elif "git-upload-pack" in op_type:
+                        # No label is seen but the "git-upload-pack" is present, considering it a clone
+                        if "hit" in labels:
+                            op_action = "clone"
+                        else: # cache miss or no mention
+                            op_action = "clone_miss"
+                    elif "info/refs" in op_type:
+                        if "hit" in labels:
+                            op_action = "refs"
+                        else: # cache miss or no mention
+                            op_action = "refs_miss"
+                    elif [x for x in ["capabilities", "negotiation"] if (x in labels)]:
+                        # throwing out un-wanted data
+                        git_type = "" # clearing git_type as we don't want to count unused data points
                     else:
                         print(f"Unknown state, skipping. Code 10004\n{protocol} | {action} | {labels}")
+                        git_type = "" # clearing git_type as we don't want to count unused data points
                         pass
-                else:
-                    # parsing out initial auth requests as a single http git op takes 3 requests
-                    pass
             elif "/plugins/servlet" in op_type:
                 # internal features (includes webhooks, permissions, integrations)
                 # not sure   #############################################################
                 pass
+            elif [x for x in ["/rest/api", "/rest/capabilities", "/status", "/api/v3/rate_limit"] if (x in op_type)]:
+                # rest api interaction
+                op_action = "rest"
             elif [x for x in ["/s/", "/download/"] if(x in op_type)]:
                 # static file request from WebUI
                 # /projects, /users, 
                 op_action = "filesystem"
-            elif [x for x in ["/admin/", "/account", "/dashboard", "/mvc/", "/projects/", "/users", "/login"] if(x in op_type)]: 
-                # any matches for the above list identifying WebUI interactions
+            elif [x for x in ["/rest", "/admin", "/account", "/dashboard", "/mvc", "/projects", "/repos", "/users", "/login", "/logout", "profile"] if(x in op_type)]: 
                 op_action = "web_ui"
+                # "/rest/" internal REST like permissions
             elif op_type == "/":  # Exact match root of webserver
-                op_action = "web_ui"
+                op_action = "web_ui" 
             else:
-                print(f"Cannot parse line, please update Parser.identify_action with appropreiate use case for:\n{protocol} | {action} | {labels}")
+                print(f"Cannot parse line, please update Parser.identify_action() with appropreiate use case for:\n{protocol} | {action} | {labels} | {status_code}")
                 pass
         elif "ssh" in str(protocol).lower():
             git_type = "ssh"
@@ -358,6 +375,8 @@ class Parser:
                     elif "bypass" in labels:
                         # not sure   #############################################################
                         pass
+                    elif "cache" not in labels:
+                        op_action = "shallow_miss"
                     else:
                         print(f"unknown state, skipping. Code 10005\n{protocol} | {action} | {labels}")
                         pass
@@ -368,6 +387,8 @@ class Parser:
                 elif "bypass" in labels:
                     # not sure   #############################################################
                     pass
+                elif "cache" not in labels:
+                    op_action = "clone_miss"
                 else:
                     print(f"Unknown state, skipping. Code 10006\n{protocol} | {action} | {labels}")
                     pass
@@ -379,6 +400,8 @@ class Parser:
                 elif "bypass" in labels:
                     # not sure   #############################################################
                     pass
+                elif "cache" not in labels:
+                    op_action = "fetch_miss"
                 else:
                     print(f"Unknown state, skipping. Code 10007\n{protocol} | {action} | {labels}")
                     pass
@@ -395,7 +418,8 @@ class Parser:
                 else:
                     print(f"Unknown state, skipping. Code 10008\n{protocol} | {action} | {labels}")
         else:
-            print(f"Could not parse protocol: '{protocol}' properly")
+            # Dropping all http 404 requests to make sure that incorrect endpoints aren't counted
+            pass
         identified_action = {"op_action": op_action, "git_type": git_type, "max_connections": concurrent_connections}
         return identified_action
 
@@ -479,7 +503,7 @@ class Parser:
                     this_hour['total_ref_ad_miss'] += 1
                 elif action['op_action'] == "push":
                     this_hour['total_pushes'] += 1
-                elif action['op_action'] == "rest_api":
+                elif action['op_action'] == "rest":
                     this_hour['total_rest_calls'] += 1
                 elif action['op_action'] == "filesystem":
                     this_hour['total_filesystem_calls'] += 1
