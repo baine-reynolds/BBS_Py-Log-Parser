@@ -4,3 +4,6 @@ venv
 .vscode
 **.zip
 access_logs_parsed.json
+**.png
+**.pdf
+**.jpg
