@@ -1,9 +1,9 @@
 import matplotlib.pyplot as plt
 
 class Graph:
-    def graph_parsed(hourly_breakdown, system_stats, dark_mode):
+    def graph_parsed(node, hourly_breakdown, system_stats, dark_mode):
         all_chrono_days = Graph.sort_days(hourly_breakdown.keys())
-        Graph.clones(all_chrono_days, hourly_breakdown, dark_mode)
+        Graph.clones(node, all_chrono_days, hourly_breakdown, dark_mode)
         #Graph.fetches(sorted_hourly_breakdown)
         #Graph.pushes(sorted_hourly_breakdown)
         #Graph.ref_ads(sorted_hourly_breakdown)
@@ -13,7 +13,7 @@ class Graph:
         #Graph.protocols(sorted_hourly_breakdown)
 
         #Graph.repos(system_stats['repo_stats'], dark_mode)
-        Graph.operations(system_stats['operations'], dark_mode)
+        Graph.operations(node, system_stats['operations'], dark_mode)
 
         return("Dry Run complete")
         #return(path_to_completed_pdf)
@@ -25,7 +25,7 @@ class Graph:
         all_chrono_days.sort()
         return all_chrono_days
 
-    def clones(all_chrono_days, hourly_breakdown, dark_mode):
+    def clones(node, all_chrono_days, hourly_breakdown, dark_mode):
         clone_all_data = []
         clone_hit_data = []
         clone_miss_data = []
@@ -57,13 +57,13 @@ class Graph:
         plt.plot(date_labels, clone_hit_data, 'g.-', label="Clone/Cache Hit")
         plt.plot(date_labels, clone_miss_data, 'r.-', label="Clone/Cache Miss")
         #plt.plot([], operation], labels=labels, textprops=textprops)
-        plt.title("Clone Operations", fontdict={'fontweight': 'bold', 'fontsize': 20})
+        plt.title(f"Clone Operations ({node})", fontdict={'fontweight': 'bold', 'fontsize': 20})
         plt.xlabel('')
         plt.legend()
         plt.xticks(date_labels[::24])
         plt.ylabel('Number of Clones', fontdict={'fontweight': 'bold', 'fontsize': 14})
 
-        plt.savefig('clones.png')
+        plt.savefig(f'{node}-clones.png')
 
     def fetches(hourly_breakdown):
         pass
@@ -108,7 +108,7 @@ class Graph:
         #labels = [""]
 
 
-    def operations(operations, dark_mode):
+    def operations(node, operations, dark_mode):
         '''
         Accepts dict{operations}
             "operations": {
@@ -128,10 +128,10 @@ class Graph:
         
         labels = ["git http", "git ssh", "rest", "web_ui", "filesystem"]
         plt.pie([operations['git_http'], operations['git_ssh'], operations['rest'], operations['web_ui'], operations['filesystem']], labels=labels, textprops=textprops)
-        plt.title("Distribution of Operations")
+        plt.title(f"Distribution of Operations ({node})")
         plt.xlabel('')
         plt.ylabel('')
-        plt.savefig('operations.png')
+        plt.savefig(f'{node}-operations.png')
 
 
 
