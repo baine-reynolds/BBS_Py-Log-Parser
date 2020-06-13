@@ -19,42 +19,46 @@ class Init:
         Returns a list of full paths (os.path) to each file located/matched to "atlassian-bitbucket-access*".
         '''
         all_nodes = {}
-        if path is not None:
+        if provided_path is not None:
             for root, dirs, files in os.walk(provided_path):
                 for name in files:
                     if fnmatch.fnmatch(name, "atlassian-bitbucket-access*"):
-                        #all_files.append(os.path.join(root, name))
-                        file_path = os.path.join(root, name)
-                        node = identify_node(file_path, provided_path)
+                        path_to_log = os.path.join(root, name)
+                        node = Init.identify_node(path_to_log, provided_path)
                         if node not in all_nodes.keys():
                             all_nodes[node] = []
-                        all_nodes[node].append(file_path)
+                        all_nodes[node].append(path_to_log)
             if len(all_nodes.keys()) > 0:
                 # if logs and nodes were identified, continue
-                return all_files
+                return all_nodes
             else:
                 exit("Could not locate any access logs in given path. Please check the path and try again.")
         else:
             exit("No path specificed, please use the '-d' flag with a path to the access logs.")
 
-    def identify_node(file_path, provided_path):
+    def identify_node(path_to_log, provided_path):
+        # To ensure consistent pathing expectations, remove a tailing '/' from "provided_path" if present
+        if provided_path[-1] == "/":
+            provided_path = provided_path[:-1]
         # Reduces path to only the sub-directories after the given parent path
-        short_path = file_path.replace(provided_path, "")
+        short_path = path_to_log.replace(provided_path, "")
         list_short_path = short_path.split('/')
         try:
+            # If path_provided = ".../SSP-12345" (Multi-node sub-dirs each containing ./node-*/application-logs/atlassian-bitbucket-access*.log)
             if "access" in list_short_path[3]:
-                node = list_short_path[1]:
+                node = list_short_path[1]
         except IndexError:
             try:
+                # if path_provided = ".../node-1/" (single node with a ./application-logs/atlassian-bitbucket-access*.log)
                 if "access" in list_short_path[2]:
                     # Assume single node is given, supply "Node 1" as the node name
                     node = "Node 1"
             except IndexError:
                 try:
+                    # If path_provided = ".../application-logs/" (single node containing ./atlassian-bitbucket-access*.log)
                     if "access" in list_short_path[1]:
                         # Assume single node is given, supply "Node 1" as the node name
                         node = "Node 1"
                 except IndexError:
                     exit("Access logs not within expected folder structure, please check the path given and try again.")
         return node
-
