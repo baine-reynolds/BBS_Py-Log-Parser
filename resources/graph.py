@@ -45,8 +45,8 @@ class Graph:
                     clone_hit_data.append(0)
                     clone_miss_data.append(0)
 
-        plt.figure(figsize=(32,10))
-        plt.subplots_adjust(top=0.95, bottom=0.05, left=0.02, right=0.99, wspace=0.9)
+        plt.figure(figsize=(24,10))
+        plt.subplots_adjust(top=0.96, bottom=0.05, left=0.04, right=0.99, wspace=0.9)
         # bottom=0, right=1, left=0, hspace=0, wspace=0)
         plt.margins(0.01,0.05)
         textprops={'color': 'black'}
@@ -57,11 +57,11 @@ class Graph:
         plt.plot(date_labels, clone_hit_data, 'g.-', label="Clone/Cache Hit")
         plt.plot(date_labels, clone_miss_data, 'r.-', label="Clone/Cache Miss")
         #plt.plot([], operation], labels=labels, textprops=textprops)
-        plt.title("Clone Operations", fontdict={'fontweight': 'bold'})
+        plt.title("Clone Operations", fontdict={'fontweight': 'bold', 'fontsize': 20})
         plt.xlabel('')
         plt.legend()
         plt.xticks(date_labels[::24])
-        plt.ylabel('Number of Clones')
+        plt.ylabel('Number of Clones', fontdict={'fontweight': 'bold', 'fontsize': 14})
 
         plt.savefig('clones.png')
 
