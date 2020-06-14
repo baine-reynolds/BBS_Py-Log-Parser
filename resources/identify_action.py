@@ -20,6 +20,8 @@ class IdentifyAction():
                 try:
                     if int(status_code) in range(200,299):
                         op_action = IdentifyAction.git_op_action(action, labels)
+                    else:
+                        op_action = "ignore" # drop 401s and redirects
                 except ValueError:
                     # If status_code == "-" then it cannot be converted to an int()
                     pass
