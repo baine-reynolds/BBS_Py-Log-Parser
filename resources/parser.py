@@ -199,7 +199,7 @@ class Parser:
                         #parsed_timestamp = timestamp.split(':')[0]  # From: "2020-04-27 14:21:23,359" To: "2020-04-27 14"
                         day, hour = Parser.parse_timestamp(timestamp)
 
-                        parsed_action = IdentifyAction.parse_new(protocol, request_id, action, status_code, labels)
+                        parsed_action = IdentifyAction.parse(protocol, request_id, action, status_code, labels)
 
                         if day not in file_parsed.keys():
                             # add dict for day as place holder
