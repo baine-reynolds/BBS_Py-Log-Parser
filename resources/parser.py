@@ -18,7 +18,7 @@ class Parser:
                               "total_fetches" = int(counter, default = 0),
                               "total_fetch_misses" = int(counter, default = 0),
                               "total_ref_ads" = int(counter, default = 0),
-                              "total_ref_ad_miss" = int(counter, default = 0),
+                              "total_ref_ad_misses" = int(counter, default = 0),
                               "total_pushes" = int(counter, default = 0),
                               "total_rest_calls" = int(counter, default = 0),
                               "total_filesystem_calls" = int(counter, default = 0),
@@ -35,7 +35,7 @@ class Parser:
                               "total_fetches" = int(counter, default = 0),
                               "total_fetch_misses" = int(counter, default = 0),
                               "total_ref_ads" = int(counter, default = 0),
-                              "total_ref_ad_miss" = int(counter, default = 0),
+                              "total_ref_ad_misses" = int(counter, default = 0),
                               "total_pushes" = int(counter, default = 0),
                               "total_rest_calls" = int(counter, default = 0),
                               "total_filesystem_calls" = int(counter, default = 0),
@@ -54,7 +54,7 @@ class Parser:
                               "total_fetches" = int(counter, default = 0),
                               "total_fetch_misses" = int(counter, default = 0),
                               "total_ref_ads" = int(counter, default = 0),
-                              "total_ref_ad_miss" = int(counter, default = 0),
+                              "total_ref_ad_misses" = int(counter, default = 0),
                               "total_pushes" = int(counter, default = 0),
                               "total_rest_calls" = int(counter, default = 0),
                               "total_filesystem_calls" = int(counter, default = 0),
@@ -75,7 +75,7 @@ class Parser:
                                                 "total_fetches" = int(counter, default = 0),
                                                 "total_fetch_misses" = int(counter, default = 0),
                                                 "total_ref_ads" = int(counter, default = 0),
-                                                "total_ref_ad_miss" = int(counter, default = 0),
+                                                "total_ref_ad_misses" = int(counter, default = 0),
                                                 "total_pushes" = int(counter, default = 0)
                                                },
                              repo_identifier: { "total_clones" = int(counter, default = 0),
@@ -85,7 +85,7 @@ class Parser:
                                                 "total_fetches" = int(counter, default = 0),
                                                 "total_fetch_misses" = int(counter, default = 0),
                                                 "total_ref_ads" = int(counter, default = 0),
-                                                "total_ref_ad_miss" = int(counter, default = 0),
+                                                "total_ref_ad_misses" = int(counter, default = 0),
                                                 "total_pushes" = int(counter, default = 0)
                                                },
                              ...
@@ -128,7 +128,7 @@ class Parser:
                                     "total_fetches" = int(counter, default = 0),
                                     "total_fetch_misses" = int(counter, default = 0),
                                     "total_ref_ads" = int(counter, default = 0),
-                                    "total_ref_ad_miss" = int(counter, default = 0),
+                                    "total_ref_ad_misses" = int(counter, default = 0),
                                     "total_pushes" = int(counter, default = 0),
                                     "total_rest_calls" = int(counter, default = 0),
                                     "total_filesystem_calls" = int(counter, default = 0),
@@ -149,7 +149,7 @@ class Parser:
                                                      "total_fetches" = int(counter, default = 0),
                                                      "total_fetch_misses" = int(counter, default = 0),
                                                      "total_ref_ads" = int(counter, default = 0),
-                                                     "total_ref_ad_miss" = int(counter, default = 0),
+                                                     "total_ref_ad_misses" = int(counter, default = 0),
                                                      "total_pushes" = int(counter, default = 0)
                                                   },
                                 repo_identifier: { "total_clones" = int(counter, default = 0),
@@ -159,7 +159,7 @@ class Parser:
                                                    "total_fetches" = int(counter, default = 0),
                                                    "total_fetch_misses" = int(counter, default = 0),
                                                    "total_ref_ads" = int(counter, default = 0),
-                                                   "total_ref_ad_miss" = int(counter, default = 0),
+                                                   "total_ref_ad_misses" = int(counter, default = 0),
                                                    "total_pushes" = int(counter, default = 0)
                                                   },
                                 ...
@@ -305,7 +305,7 @@ class Parser:
                              "total_fetches" = int(counter, default = 0),
                              "total_fetch_misses" = int(counter, default = 0),
                              "total_ref_ads" = int(counter, default = 0),
-                             "total_ref_ad_miss" = int(counter, default = 0),
+                             "total_ref_ad_misses" = int(counter, default = 0),
                              "total_pushes" = int(counter, default = 0),
                              "total_rest_calls" = int(counter, default = 0),
                              "total_filesystem_calls" = int(counter, default = 0),
@@ -327,7 +327,7 @@ class Parser:
                     "total_fetches": 0,
                     "total_fetch_misses": 0,
                     "total_ref_ads": 0,
-                    "total_ref_ad_miss": 0,
+                    "total_ref_ad_misses": 0,
                     "total_pushes": 0,
                     "total_rest_calls": 0,
                     "total_filesystem_calls": 0,
@@ -351,7 +351,7 @@ class Parser:
                     elif action['op_action'] == "fetch": file_summarized[day][hour]['total_fetches'] += 1
                     elif action['op_action'] == "fetch_miss": file_summarized[day][hour]['total_fetch_misses'] += 1
                     elif action['op_action'] == "refs": file_summarized[day][hour]['total_ref_ads'] += 1
-                    elif action['op_action'] == "refs_miss": file_summarized[day][hour]['total_ref_ad_miss'] += 1
+                    elif action['op_action'] == "refs_miss": file_summarized[day][hour]['total_ref_ad_misses'] += 1
                     elif action['op_action'] == "push": file_summarized[day][hour]['total_pushes'] += 1
                     elif action['op_action'] == "rest": file_summarized[day][hour]['total_rest_calls'] += 1
                     elif action['op_action'] == "filesystem": file_summarized[day][hour]['total_filesystem_calls'] += 1
@@ -378,7 +378,7 @@ class Parser:
                          "total_fetches": 0,
                          "total_fetch_misses": 0,
                          "total_ref_ads": 0,
-                         "total_ref_ad_miss": 0,
+                         "total_ref_ad_misses": 0,
                          "total_pushes": 0,
                          "total_rest_calls": 0,
                          "total_filesystem_calls": 0,
@@ -394,7 +394,7 @@ class Parser:
                          "total_fetches": 0,
                          "total_fetch_misses": 0,
                          "total_ref_ads": 0,
-                         "total_ref_ad_miss": 0,
+                         "total_ref_ad_misses": 0,
                          "total_pushes" : 0
                         }
         operations = { "git_http": 0,
@@ -424,7 +424,7 @@ class Parser:
                     all_days[day][hour]['total_fetches'] += single_file_summarized[day][hour]['total_fetches']
                     all_days[day][hour]['total_fetch_misses'] += single_file_summarized[day][hour]['total_fetch_misses']
                     all_days[day][hour]['total_ref_ads'] += single_file_summarized[day][hour]['total_ref_ads']
-                    all_days[day][hour]['total_ref_ad_miss'] += single_file_summarized[day][hour]['total_ref_ad_miss']
+                    all_days[day][hour]['total_ref_ad_misses'] += single_file_summarized[day][hour]['total_ref_ad_misses']
                     all_days[day][hour]['total_pushes'] += single_file_summarized[day][hour]['total_pushes']
                     all_days[day][hour]['total_rest_calls'] += single_file_summarized[day][hour]['total_rest_calls']
                     all_days[day][hour]['total_filesystem_calls'] += single_file_summarized[day][hour]['total_filesystem_calls']
@@ -446,7 +446,7 @@ class Parser:
                 all_repo_stats[repo_identifier]['total_fetches'] += single_file_statistics['repo_stats'][repo_identifier]['fetch']
                 all_repo_stats[repo_identifier]['total_fetch_misses'] += single_file_statistics['repo_stats'][repo_identifier]['fetch_miss']
                 all_repo_stats[repo_identifier]['total_ref_ads'] += single_file_statistics['repo_stats'][repo_identifier]['refs']
-                all_repo_stats[repo_identifier]['total_ref_ad_miss'] += single_file_statistics['repo_stats'][repo_identifier]['refs_miss']
+                all_repo_stats[repo_identifier]['total_ref_ad_misses'] += single_file_statistics['repo_stats'][repo_identifier]['refs_miss']
                 all_repo_stats[repo_identifier]['total_pushes'] += single_file_statistics['repo_stats'][repo_identifier]['push']
 
             # Compile Operations stats
