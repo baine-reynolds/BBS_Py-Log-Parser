@@ -15,7 +15,7 @@ class IdentifyAction():
 
         if "http" in str(protocol).lower() and (str(status_code) != "404"):
             op_type = action.split(' ')[1].lower()  # ignoring get vs post vs delete for now
-            if [x for x in ["/scm/", "/git/"] if (x in op_type)]: # Parse Git operation
+            if [x for x in ["/scm/"] if (x in op_type)]: # Parse Git operation
                 git_type = "http"
                 try:
                     if int(status_code) in range(200,299):
@@ -56,9 +56,11 @@ class IdentifyAction():
             git_action = "clone"
         elif "fetch" in labels or "git-upload-pack" in action:
             git_action = "fetch"
+        elif "archive" in labels:
+            git_action = "ignore"
 
         cache = ""  # Cache hit by default
-        if git_action == "":
+        if git_action == "" or git_action == "ignore":
             pass
         #elif "cache" not in labels:  # Server's too busy to add labels
         #    cache = "_miss" # potentionally switch to "_busy"
@@ -74,8 +76,9 @@ class IdentifyAction():
                       "/getting-started", "/robots.txt"]
         rest_actions = ["/rest/api", "/rest/capabilities", "/status", "/api/v3/rate_limit"]
         filesystem_actions = ["/s/", "/download/"]
-        webui_actions = ["/rest", "/admin", "/account", "/dashboard", "/mvc", "/projects",
-                         "/repos", "/users", "/login", "/logout", "profile", "/plugins/servlet"]
+        webui_actions = ["/rest", "/admin", "/account", "/dashboard", "/mvc", "/projects", "/captcha",
+                         "/repos", "/users", "/login", "/logout", "profile", "/plugins/servlet", "/passwordreset",
+                         "/index", "/setup", "/about"]
 
         op_action = ""
 
