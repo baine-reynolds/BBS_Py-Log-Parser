@@ -9,15 +9,12 @@ class Graph:
         Graph.ref_ads(node, all_chrono_days, hourly_breakdown, dark_mode)
         Graph.shallow_clones(node, all_chrono_days, hourly_breakdown, dark_mode)
         Graph.summary(node, all_chrono_days, hourly_breakdown, dark_mode)
-        #Graph.max_connections(node, all_chrono_days, hourly_breakdown, dark_mode)
-        #Graph.protocols(node, all_chrono_days, hourly_breakdown, dark_mode)
+        Graph.max_connections(node, all_chrono_days, hourly_breakdown, dark_mode)
+        Graph.protocols(node, all_chrono_days, hourly_breakdown, dark_mode)
 
         #Graph.repos(system_stats['repo_stats'], dark_mode)
         Graph.operations(node, system_stats['operations'], dark_mode)
-
-        return("Dry Run complete")
-        #return(path_to_completed_pdf)
-
+        return
 
     def sort_days(hourly_breakdown_keys):
         # list all days in chronoligical order
@@ -51,7 +48,7 @@ class Graph:
         plt.margins(0.01,0.05)
         textprops={'color': 'black'}
         if dark_mode:
-            textprops = {'color': 'w'}
+            textprops = {'color': 'white'}
             plt.style.use('dark_background')
         plt.plot(date_labels, clone_all_data, 'b--', label="All Clones") 
         plt.plot(date_labels, clone_hit_data, 'g.-', label="Clone/Cache Hit")
@@ -91,7 +88,7 @@ class Graph:
         plt.margins(0.01,0.05)
         textprops={'color': 'black'}
         if dark_mode:
-            textprops = {'color': 'w'}
+            textprops = {'color': 'white'}
             plt.style.use('dark_background')
         plt.plot(date_labels, fetch_all_data, 'b--', label="All Fetches")
         plt.plot(date_labels, fetch_hit_data, 'g.-', label="Fetch/Cache Hit")
@@ -125,7 +122,7 @@ class Graph:
         plt.margins(0.01,0.05)
         textprops={'color': 'black'}
         if dark_mode:
-            textprops = {'color': 'w'}
+            textprops = {'color': 'white'}
             plt.style.use('dark_background')
         plt.plot(date_labels, push_all_data, 'b.-', label="All pushes")
         #plt.plot([], operation], labels=labels, textprops=textprops)
@@ -163,7 +160,7 @@ class Graph:
         plt.margins(0.01,0.05)
         textprops={'color': 'black'}
         if dark_mode:
-            textprops = {'color': 'w'}
+            textprops = {'color': 'white'}
             plt.style.use('dark_background')
         plt.plot(date_labels, ref_ad_all_data, 'b--', label="All refs")
         plt.plot(date_labels, ref_ad_hit_data, 'g.-', label="ref/Cache Hit")
@@ -203,7 +200,7 @@ class Graph:
         plt.margins(0.01,0.05)
         textprops={'color': 'black'}
         if dark_mode:
-            textprops = {'color': 'w'}
+            textprops = {'color': 'white'}
             plt.style.use('dark_background')
         plt.plot(date_labels, shallow_clone_all_data, 'b--', label="All shallow_clones")
         plt.plot(date_labels, shallow_clone_hit_data, 'g.-', label="shallow_clone/Cache Hit")
@@ -246,7 +243,7 @@ class Graph:
         plt.margins(0.01,0.05)
         textprops={'color': 'black'}
         if dark_mode:
-            textprops = {'color': 'w'}
+            textprops = {'color': 'white'}
             plt.style.use('dark_background')
         plt.plot(date_labels, clone_data, 'b.-', label="All Clones")
         plt.plot(date_labels, shallow_data, 'g.-', label="All Shallow Clones")
@@ -262,11 +259,70 @@ class Graph:
         plt.savefig(f'{node}-summary.jpg')
 
     def max_connections(node, all_chrono_days, hourly_breakdown, dark_mode):
-        pass
+        max_connections_data = []
+        date_labels = []
+        hours = range(0, 24)
+        for day in all_chrono_days:
+            for hour in hours:
+                date_to_use = f"{str(day)[:4]}-{str(day)[4:6]}-{str(day)[6:8]} {hour:02d}"
+                date_labels.append(str(date_to_use))
+                try:
+                    max_connections_data.append(hourly_breakdown[day][hour]['highest_seen_concurrent_operations'])
+                except KeyError:
+                    # start of day may not be at 0 so this fills in the blanks to have a complete 24 hour day
+                    max_connections_data.append(0)
+
+        plt.figure(figsize=(24,10))
+        plt.subplots_adjust(top=0.96, bottom=0.05, left=0.04, right=0.99, wspace=0.9)
+        # bottom=0, right=1, left=0, hspace=0, wspace=0)
+        plt.margins(0.01,0.05)
+        textprops={'color': 'black'}
+        if dark_mode:
+            textprops = {'color': 'white'}
+            plt.style.use('dark_background')
+        plt.plot(date_labels, max_connections_data, 'b.-', label="Max Concurrent Connections")
+        #plt.plot([], operation], labels=labels, textprops=textprops)
+        plt.title(f"Maximum Concurrent SCM-Hosting Operations ({node})", fontdict={'fontweight': 'bold', 'fontsize': 20})
+        plt.xlabel('')
+        plt.legend()
+        plt.xticks(date_labels[::24])
+
+        plt.savefig(f'{node}-max_connections.jpg')
 
     def protocols(node, all_chrono_days, hourly_breakdown, dark_mode):
-        pass
+        ssh_operations_data = []
+        http_operations_data = []
+        date_labels = []
+        hours = range(0, 24)
+        for day in all_chrono_days:
+            for hour in hours:
+                date_to_use = f"{str(day)[:4]}-{str(day)[4:6]}-{str(day)[6:8]} {hour:02d}"
+                date_labels.append(str(date_to_use))
+                try:
+                    ssh_operations_data.append(hourly_breakdown[day][hour]['total_git_ssh_operations'])
+                    http_operations_data.append(hourly_breakdown[day][hour]['total_git_http_operations'])
+                except KeyError:
+                    # start of day may not be at 0 so this fills in the blanks to have a complete 24 hour day
+                    ssh_operations_data.append(0)
+                    http_operations_data.append(0)
 
+        plt.figure(figsize=(24,10))
+        plt.subplots_adjust(top=0.96, bottom=0.05, left=0.04, right=0.99, wspace=0.9)
+        # bottom=0, right=1, left=0, hspace=0, wspace=0)
+        plt.margins(0.01,0.05)
+        textprops={'color': 'black'}
+        if dark_mode:
+            textprops = {'color': 'white'}
+            plt.style.use('dark_background')
+        plt.plot(date_labels, ssh_operations_data, 'r.-', label="Git SSH Operations") 
+        plt.plot(date_labels, http_operations_data, 'g.-', label="Git HTTP Operations")
+        #plt.plot([], operation], labels=labels, textprops=textprops)
+        plt.title(f"Git Protocols ({node})", fontdict={'fontweight': 'bold', 'fontsize': 20})
+        plt.xlabel('')
+        plt.legend()
+        plt.xticks(date_labels[::24])
+
+        plt.savefig(f'{node}-protocols.jpg')
     def repos(repo_stats, dark_mode):
         '''
         Accepts dict{repo_stats}
@@ -282,12 +338,12 @@ class Graph:
             }
         Returns path to saved pie chart
         '''
+        pass
         # Per repository
         #for repo_identifier in repo_stats:
             
         #plt.title(f"")
         #labels = [""]
-
 
     def operations(node, operations, dark_mode):
         '''
@@ -304,7 +360,7 @@ class Graph:
         plt.figure(figsize=(16,10))
         textprops={'color': 'black'}
         if dark_mode:
-            textprops = {'color': 'w'}
+            textprops = {'color': 'white'}
             plt.style.use('dark_background')
         
         labels = ["git http", "git ssh", "rest", "web_ui", "filesystem"]

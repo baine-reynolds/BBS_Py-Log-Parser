@@ -16,7 +16,8 @@ def export_json(node, hourly_breakdown, system_stats):
 def combine_png_to_pdf(node):
     base_dir = getcwd()
     graph_file_names = ["-clones.jpg", "-fetches.jpg", "-pushes.jpg", "-refs.jpg",
-                        "-shallow_shallow_clones.jpg", "-summary.jpg", "-operations.jpg"]
+                        "-shallow_shallow_clones.jpg", "-summary.jpg", "-max_connections.jpg",
+                        "-protocols.jpg", "-operations.jpg"]
     with open(f'{node}.pdf', 'wb') as pdf_output:
         images_to_write = []
         for graph_name in graph_file_names:
@@ -36,7 +37,6 @@ def main():
             print(f"Created '{node}-access_logs_parsed.json' in working directory")
         else:
             Graph.graph_parsed(node, hourly_breakdown, system_stats, options.dark_mode)
-            #print(f"Created graph .jpg files for '{node}' in working directory")
             combine_png_to_pdf(node)
             print(f"Created pdf of all graphs for {node} found at {node}.pdf")
 
