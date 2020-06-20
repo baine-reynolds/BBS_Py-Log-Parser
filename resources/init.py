@@ -10,6 +10,7 @@ class Init:
         parser.add_option('-p', '--path', dest='filepath', help="Path to access logs")
         parser.add_option('-j', '--json', dest='json', default=False, action="store_true", help='Exports raw data to json rather than graphing')
         parser.add_option('-d', '--dark', dest='dark_mode', default=False, action="store_true", help='Sets Graphs to use dark backdrops')
+        parser.add_option('-v', '--verbose', dest='verbose', default=False, action="store_true", help='Sets verbose logging to enabled')
         options, args = parser.parse_args()
         return options, args
 
