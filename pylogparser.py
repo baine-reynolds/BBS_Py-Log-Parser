@@ -31,7 +31,7 @@ def main():
     options, args = Init.parse_input()
     all_nodes = Init.validate_path(options.filepath)
     for node in all_nodes:
-        hourly_breakdown, system_stats = Parser.start(all_nodes[node])
+        hourly_breakdown, system_stats = Parser.start(all_nodes[node], options.verbose)
         if options.json == True:
             export_json(node, hourly_breakdown, system_stats)
             print(f"Created '{node}-access_logs_parsed.json' in working directory")
