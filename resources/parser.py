@@ -3,7 +3,7 @@ import concurrent.futures
 import re
 
 class Parser:
-    def start(list_of_access_logs):
+    def start(list_of_access_logs, verbose):
         '''
         Accepts list[list_of_access_logs] where each item is a full path to an access log.
         Returns dict{all_parsed_logs} and dict{system_stats}
@@ -103,7 +103,7 @@ class Parser:
 
         for log in list_of_access_logs:
             # start new thread for each log file
-            tasks.append(executor.submit(Parser.parse_log, log))
+            tasks.append(executor.submit(Parser.parse_log, log, verbose))
         for thread in concurrent.futures.as_completed(tasks):
             '''
             Each thread.result() will contain a dictionary where there will be 24 keys with each key
@@ -114,7 +114,7 @@ class Parser:
             all_parsed_logs.append(thread.result())
         return Parser.compile_results(all_parsed_logs)
 
-    def parse_log(path_to_access_log):
+    def parse_log(path_to_access_log, verbose):
         '''
         Accepts a single path to a log file
         Returns dict{file_summarized} **time sensitive** and dict{file_statistics} **time insensitive** where:
@@ -185,7 +185,7 @@ class Parser:
                     if ("o@" in split[2] and len(split) > 12) or ("o*" in split[2] and len(split) > 12):
                         protocol, request_id, timestamp, action, status_code, labels = Parser.parse_raw_line(split)
                         day, hour = Parser.parse_timestamp(timestamp)
-                        parsed_action = IdentifyAction.parse(protocol, request_id, action, status_code, labels)                        
+                        parsed_action = IdentifyAction.parse(protocol, request_id, action, status_code, labels, verbose)                        
 
                         if day not in file_parsed.keys():
                             # add dict for day as place holder
