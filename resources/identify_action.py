@@ -1,6 +1,5 @@
-
 class IdentifyAction():
-    def parse(protocol, request_id, action, status_code, labels):
+    def parse(protocol, request_id, action, status_code, labels, verbose):
         '''
         Accepts: str(protocol), str(request_id), str(action), str(status_code), str(labels)
         Returns: dict{
@@ -26,7 +25,7 @@ class IdentifyAction():
                     # If status_code == "-" then it cannot be converted to an int()
                     pass
             else: # Parse if rest, web_ui, or filesystem
-                op_action = IdentifyAction.http_webserver(op_type)
+                op_action = IdentifyAction.http_webserver(op_type, verbose)
         elif "ssh" in str(protocol).lower():
             git_type = "ssh"
             op_action = IdentifyAction.git_op_action(action, labels)
@@ -34,7 +33,8 @@ class IdentifyAction():
             op_action = "ignore"
 
         if op_action == "":
-            print(f"Cannot parse line, please update IdentifyAction.parse() with appropreiate use case for:\n{protocol} | {action} | {labels} | {status_code}")
+            if verbose:
+                print(f"Cannot parse line, please update IdentifyAction.parse() with appropreiate use case for:\n{protocol} | {action} | {labels} | {status_code}")
         elif op_action == "ignore":
             pass
         # Break request_id and find concurrent SCM-hosting ticket count
@@ -48,16 +48,23 @@ class IdentifyAction():
         if "push" in labels or "git-receive-pack" in action:
             #git_action = "push"
             return("push")
-        elif "refs" in labels or "info/refs" in action:
+        elif "refs" in labels:
             git_action = "refs"
-        elif "shallow" in labels:
-            git_action = "shallow"
+        elif "shallow" in labels: #shallow must be before 'clone' otherwise all shallows will get pooled in with clones
+            if "fetch" in labels:
+                git_action = "fetch"
+            else:
+                git_action = "shallow"
         elif "clone" in labels:
             git_action = "clone"
-        elif "fetch" in labels or "git-upload-pack" in action:
+        elif "fetch" in labels:
             git_action = "fetch"
         elif "archive" in labels:
             git_action = "ignore"
+        elif "info/refs" in action:
+            git_action = "refs"
+        elif "git-upload-pack" in action:
+            git_action = "fetch"
 
         cache = ""  # Cache hit by default
         if git_action == "" or git_action == "ignore":
@@ -70,7 +77,7 @@ class IdentifyAction():
         git_op = f"{git_action}{cache}"
         return git_op
 
-    def http_webserver(op_type):
+    def http_webserver(op_type, verbose):
         ignore_list = ["/favicon.ico", "/avatar.png", "/system/maintenance", "/unavailable",
                       "/j_atl_security_check", "/j_atl_security_logout", "/system/startup",
                       "/getting-started", "/robots.txt"]
@@ -93,7 +100,8 @@ class IdentifyAction():
         elif op_type == "/":  # Exact match root of webserver
             op_action = "web_ui"
         else:
-            print(f"Unable to catagorize the following into [rest, filesystem, web_ui]: '{op_type}'")
+            if verbose:
+                print(f"Unable to catagorize the following into [rest, filesystem, web_ui]: '{op_type}'")
             op_action = "ignore"
 
         return op_action
