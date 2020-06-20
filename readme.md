@@ -11,12 +11,13 @@ You can also pass a directory which contains multiple support zips and the tool 
         python3 plugin-checker.py -f /home/<user-name>/Downloads/multi-nodes
     
 Where "multi-nodes" is a directory containing...
- - Node 1 - application-config - bitbucket.properties
-          \ application-logs - *.logs
-          \ application-properties - application.xml
- - Node 2 - application-config - bitbucket.properties
-          \ application-logs - *.logs
-          \ application-properties - application.xml
+
+        Node 1 - application-config - bitbucket.properties
+               \ application-logs - *.logs
+               \ application-properties - application.xml
+        Node 2 - application-config - bitbucket.properties
+               \ application-logs - *.logs
+               \ application-properties - application.xml
 
 Then 2 pdfs will be created, one named "Node 1" another named "Node 2" (whatever the folder names are)
 
