@@ -42,7 +42,7 @@ class Graph:
                     clone_hit_data.append(0)
                     clone_miss_data.append(0)
 
-        plt.figure(figsize=(24,10))
+        plt.figure(figsize=(16,10))
         plt.subplots_adjust(top=0.96, bottom=0.05, left=0.04, right=0.99, wspace=0.9)
         # bottom=0, right=1, left=0, hspace=0, wspace=0)
         plt.margins(0.01,0.05)
@@ -50,15 +50,17 @@ class Graph:
         if dark_mode:
             textprops = {'color': 'white'}
             plt.style.use('dark_background')
-        plt.plot(date_labels, clone_all_data, 'b--', label="All Clones") 
-        plt.plot(date_labels, clone_hit_data, 'g.-', label="Clone/Cache Hit")
-        plt.plot(date_labels, clone_miss_data, 'r.-', label="Clone/Cache Miss")
+        plt.plot(date_labels, clone_hit_data, 'g-', label="Clone/Cache Hit")
+        plt.plot(date_labels, clone_miss_data, 'r-', label="Clone/Cache Miss")
+        plt.fill_between(date_labels, clone_hit_data, color='green', alpha=0.25)
+        plt.fill_between(date_labels, clone_miss_data, color='red', alpha=0.25)
+        plt.plot(date_labels, clone_all_data, 'b-', label="All Clones")
         #plt.plot([], operation], labels=labels, textprops=textprops)
         plt.title(f"Clone Operations ({node})", fontdict={'fontweight': 'bold', 'fontsize': 20})
         plt.xlabel('')
         plt.legend()
         plt.xticks(date_labels[::24])
-        plt.ylabel('Number of Clones', fontdict={'fontweight': 'bold', 'fontsize': 14})
+        #plt.ylabel('Number of Clones', fontdict={'fontweight': 'bold', 'fontsize': 14})
 
         plt.savefig(f'{node}-clones.jpg')
 
@@ -82,7 +84,7 @@ class Graph:
                     fetch_hit_data.append(0)
                     fetch_miss_data.append(0)
 
-        plt.figure(figsize=(24,10))
+        plt.figure(figsize=(16,10))
         plt.subplots_adjust(top=0.96, bottom=0.05, left=0.04, right=0.99, wspace=0.9)
         # bottom=0, right=1, left=0, hspace=0, wspace=0)
         plt.margins(0.01,0.05)
@@ -90,15 +92,17 @@ class Graph:
         if dark_mode:
             textprops = {'color': 'white'}
             plt.style.use('dark_background')
-        plt.plot(date_labels, fetch_all_data, 'b--', label="All Fetches")
-        plt.plot(date_labels, fetch_hit_data, 'g.-', label="Fetch/Cache Hit")
-        plt.plot(date_labels, fetch_miss_data, 'r.-', label="Fetch/Cache Miss")
+        plt.plot(date_labels, fetch_hit_data, 'g-', label="Fetch/Cache Hit")
+        plt.plot(date_labels, fetch_miss_data, 'r-', label="Fetch/Cache Miss")
+        plt.fill_between(date_labels, fetch_hit_data, color='green', alpha=0.25)
+        plt.fill_between(date_labels, fetch_miss_data, color='red', alpha=0.25)
+        plt.plot(date_labels, fetch_all_data, 'b-', label="All Fetches")
         #plt.plot([], operation], labels=labels, textprops=textprops)
         plt.title(f"Fetch Operations ({node})", fontdict={'fontweight': 'bold', 'fontsize': 20})
         plt.xlabel('')
         plt.legend()
         plt.xticks(date_labels[::24])
-        plt.ylabel('Number of Fetches', fontdict={'fontweight': 'bold', 'fontsize': 14})
+        #plt.ylabel('Number of Fetches', fontdict={'fontweight': 'bold', 'fontsize': 14})
 
         plt.savefig(f'{node}-fetches.jpg')
 
@@ -116,7 +120,7 @@ class Graph:
                     # start of day may not be at 0 so this fills in the blanks to have a complete 24 hour day
                     push_all_data.append(0)
 
-        plt.figure(figsize=(24,10))
+        plt.figure(figsize=(16,10))
         plt.subplots_adjust(top=0.96, bottom=0.05, left=0.04, right=0.99, wspace=0.9)
         # bottom=0, right=1, left=0, hspace=0, wspace=0)
         plt.margins(0.01,0.05)
@@ -124,13 +128,14 @@ class Graph:
         if dark_mode:
             textprops = {'color': 'white'}
             plt.style.use('dark_background')
-        plt.plot(date_labels, push_all_data, 'b.-', label="All pushes")
+        plt.plot(date_labels, push_all_data, 'c-', label="All pushes")
+        plt.fill_between(date_labels, push_all_data, color='cyan', alpha=0.25)
         #plt.plot([], operation], labels=labels, textprops=textprops)
         plt.title(f"push Operations ({node})", fontdict={'fontweight': 'bold', 'fontsize': 20})
         plt.xlabel('')
         plt.legend()
         plt.xticks(date_labels[::24])
-        plt.ylabel('Number of pushes', fontdict={'fontweight': 'bold', 'fontsize': 14})
+        #plt.ylabel('Number of pushes', fontdict={'fontweight': 'bold', 'fontsize': 14})
 
         plt.savefig(f'{node}-pushes.jpg')
 
@@ -154,7 +159,7 @@ class Graph:
                     ref_ad_hit_data.append(0)
                     ref_ad_miss_data.append(0)
 
-        plt.figure(figsize=(24,10))
+        plt.figure(figsize=(16,10))
         plt.subplots_adjust(top=0.96, bottom=0.05, left=0.04, right=0.99, wspace=0.9)
         # bottom=0, right=1, left=0, hspace=0, wspace=0)
         plt.margins(0.01,0.05)
@@ -162,15 +167,17 @@ class Graph:
         if dark_mode:
             textprops = {'color': 'white'}
             plt.style.use('dark_background')
-        plt.plot(date_labels, ref_ad_all_data, 'b--', label="All refs")
-        plt.plot(date_labels, ref_ad_hit_data, 'g.-', label="ref/Cache Hit")
-        plt.plot(date_labels, ref_ad_miss_data, 'r.-', label="ref/Cache Miss")
+        plt.plot(date_labels, ref_ad_hit_data, 'g-', label="ref/Cache Hit")
+        plt.plot(date_labels, ref_ad_miss_data, 'r-', label="ref/Cache Miss")
+        plt.fill_between(date_labels, ref_ad_hit_data, color='green', alpha=0.25)
+        plt.fill_between(date_labels, ref_ad_miss_data, color='red', alpha=0.25)
+        plt.plot(date_labels, ref_ad_all_data, 'b-', label="All refs")
         #plt.plot([], operation], labels=labels, textprops=textprops)
         plt.title(f"ref Operations ({node})", fontdict={'fontweight': 'bold', 'fontsize': 20})
         plt.xlabel('')
         plt.legend()
         plt.xticks(date_labels[::24])
-        plt.ylabel('Number of refs', fontdict={'fontweight': 'bold', 'fontsize': 14})
+        #plt.ylabel('Number of refs', fontdict={'fontweight': 'bold', 'fontsize': 14})
 
         plt.savefig(f'{node}-refs.jpg')
 
@@ -194,7 +201,7 @@ class Graph:
                     shallow_clone_hit_data.append(0)
                     shallow_clone_miss_data.append(0)
 
-        plt.figure(figsize=(24,10))
+        plt.figure(figsize=(16,10))
         plt.subplots_adjust(top=0.96, bottom=0.05, left=0.04, right=0.99, wspace=0.9)
         # bottom=0, right=1, left=0, hspace=0, wspace=0)
         plt.margins(0.01,0.05)
@@ -202,15 +209,17 @@ class Graph:
         if dark_mode:
             textprops = {'color': 'white'}
             plt.style.use('dark_background')
-        plt.plot(date_labels, shallow_clone_all_data, 'b--', label="All shallow_clones")
-        plt.plot(date_labels, shallow_clone_hit_data, 'g.-', label="shallow_clone/Cache Hit")
-        plt.plot(date_labels, shallow_clone_miss_data, 'r.-', label="shallow_clone/Cache Miss")
+        plt.plot(date_labels, shallow_clone_hit_data, 'g-', label="shallow_clone/Cache Hit")
+        plt.plot(date_labels, shallow_clone_miss_data, 'r-', label="shallow_clone/Cache Miss")
+        plt.fill_between(date_labels, shallow_clone_hit_data, color='green', alpha=0.25)
+        plt.fill_between(date_labels, shallow_clone_miss_data, color='red', alpha=0.25)
+        plt.plot(date_labels, shallow_clone_all_data, 'b-', label="All shallow_clones")
         #plt.plot([], operation], labels=labels, textprops=textprops)
         plt.title(f"shallow_clone Operations ({node})", fontdict={'fontweight': 'bold', 'fontsize': 20})
         plt.xlabel('')
         plt.legend()
         plt.xticks(date_labels[::24])
-        plt.ylabel('Number of shallow_clones', fontdict={'fontweight': 'bold', 'fontsize': 14})
+        #plt.ylabel('Number of shallow_clones', fontdict={'fontweight': 'bold', 'fontsize': 14})
 
         plt.savefig(f'{node}-shallow_shallow_clones.jpg')
 
@@ -237,7 +246,7 @@ class Graph:
                     fetch_data.append(0)
                     push_data.append(0)
 
-        plt.figure(figsize=(24,10))
+        plt.figure(figsize=(16,10))
         plt.subplots_adjust(top=0.96, bottom=0.05, left=0.04, right=0.99, wspace=0.9)
         # bottom=0, right=1, left=0, hspace=0, wspace=0)
         plt.margins(0.01,0.05)
@@ -245,16 +254,20 @@ class Graph:
         if dark_mode:
             textprops = {'color': 'white'}
             plt.style.use('dark_background')
-        plt.plot(date_labels, clone_data, 'b.-', label="All Clones")
-        plt.plot(date_labels, shallow_data, 'g.-', label="All Shallow Clones")
-        plt.plot(date_labels, fetch_data, 'r.-', label="All Fetches")
-        plt.plot(date_labels, push_data, 'y.-', label="All Pushes")
+        plt.plot(date_labels, clone_data, 'r-', label="All Clones")
+        plt.plot(date_labels, shallow_data, 'y-', label="All Shallow Clones")
+        plt.plot(date_labels, fetch_data, 'g-', label="All Fetches")
+        plt.plot(date_labels, push_data, 'c-', label="All Pushes")
+        plt.fill_between(date_labels, clone_data, color='red', alpha=0.25)
+        plt.fill_between(date_labels, shallow_data, color='yellow', alpha=0.25)
+        plt.fill_between(date_labels, fetch_data, color='green', alpha=0.25)
+        plt.fill_between(date_labels, push_data, color='cyan', alpha=0.25)
         #plt.plot([], operation], labels=labels, textprops=textprops)
         plt.title(f"All Operations Summarized ({node})", fontdict={'fontweight': 'bold', 'fontsize': 20})
         plt.xlabel('')
         plt.legend()
         plt.xticks(date_labels[::24])
-        plt.ylabel('Number of Git Operations', fontdict={'fontweight': 'bold', 'fontsize': 14})
+        #plt.ylabel('Number of Git Operations', fontdict={'fontweight': 'bold', 'fontsize': 14})
 
         plt.savefig(f'{node}-summary.jpg')
 
@@ -272,7 +285,7 @@ class Graph:
                     # start of day may not be at 0 so this fills in the blanks to have a complete 24 hour day
                     max_connections_data.append(0)
 
-        plt.figure(figsize=(24,10))
+        plt.figure(figsize=(16,10))
         plt.subplots_adjust(top=0.96, bottom=0.05, left=0.04, right=0.99, wspace=0.9)
         # bottom=0, right=1, left=0, hspace=0, wspace=0)
         plt.margins(0.01,0.05)
@@ -280,7 +293,8 @@ class Graph:
         if dark_mode:
             textprops = {'color': 'white'}
             plt.style.use('dark_background')
-        plt.plot(date_labels, max_connections_data, 'b.-', label="Max Concurrent Connections")
+        plt.plot(date_labels, max_connections_data, 'b-', label="Max Concurrent Connections")
+        plt.fill_between(date_labels, max_connections_data, color='blue', alpha=0.25)
         #plt.plot([], operation], labels=labels, textprops=textprops)
         plt.title(f"Maximum Concurrent SCM-Hosting Operations ({node})", fontdict={'fontweight': 'bold', 'fontsize': 20})
         plt.xlabel('')
@@ -306,7 +320,7 @@ class Graph:
                     ssh_operations_data.append(0)
                     http_operations_data.append(0)
 
-        plt.figure(figsize=(24,10))
+        plt.figure(figsize=(16,10))
         plt.subplots_adjust(top=0.96, bottom=0.05, left=0.04, right=0.99, wspace=0.9)
         # bottom=0, right=1, left=0, hspace=0, wspace=0)
         plt.margins(0.01,0.05)
@@ -314,8 +328,8 @@ class Graph:
         if dark_mode:
             textprops = {'color': 'white'}
             plt.style.use('dark_background')
-        plt.plot(date_labels, ssh_operations_data, 'r.-', label="Git SSH Operations") 
-        plt.plot(date_labels, http_operations_data, 'g.-', label="Git HTTP Operations")
+        plt.plot(date_labels, ssh_operations_data, 'r-', label="Git SSH Operations") 
+        plt.plot(date_labels, http_operations_data, 'g-', label="Git HTTP Operations")
         #plt.plot([], operation], labels=labels, textprops=textprops)
         plt.title(f"Git Protocols ({node})", fontdict={'fontweight': 'bold', 'fontsize': 20})
         plt.xlabel('')
@@ -366,8 +380,8 @@ class Graph:
         labels = ["git http", "git ssh", "rest", "web_ui", "filesystem"]
         plt.pie([operations['git_http'], operations['git_ssh'], operations['rest'], operations['web_ui'], operations['filesystem']], labels=labels, textprops=textprops)
         plt.title(f"Distribution of Operations ({node})")
-        plt.xlabel('')
-        plt.ylabel('')
+        #plt.xlabel('')
+        #plt.ylabel('')
         plt.savefig(f'{node}-operations.jpg')
 
 
