@@ -27,7 +27,7 @@ class Graph:
         # Pie Graphs
         #tasks.append(executor.submit(Graph.repos, node, system_stats['repo_stats'], dark_mode))
         tasks.append(executor.submit(Graph.operations, node, system_stats['operations']))
-        
+
         for task in concurrent.futures.as_completed(tasks):
             if verbose:
                 print(f"Graph complete: {task.result()}")
@@ -313,7 +313,7 @@ class Graph:
         plt.savefig(f'{node}-protocols.jpg', dpi=500)
         return("Git Protocols")
 
-    def repos(node, repo_stats, dark_mode):
+    def repos(node, repo_stats):
         '''
         Accepts dict{repo_stats}
             "repo_stats": {
@@ -327,8 +327,26 @@ class Graph:
                     ...
             }
         '''
-        pass
-        #return("Repo Statistics")
+        top_ten_repos = {}
+        # Build out top ten repos with most interactions (not counting refs)
+        for repo_identifier in repo_stats:
+            total_ops = repo_identifier['total_clones'] + repo_identifier['total_clone_misses'] + \
+                        repo_identifier['total_shallow_clones'] + repo_identifier['total_shallow_clone_misses'] + \
+                        repo_identifier['total_fatches'] + repo_identifier['total_fetch_misses'] + \
+                        repo_identifier['pushes']
+            if len(top_ten_repos) < 10:
+                top_ten_repos[repo_identifier] = total_ops
+            else:
+                min_value = min(top_ten_repos.values())
+                matching_key = [key for key in top_ten_repos if top_ten_repos[key] == min_value]
+                if total_ops > min_value:
+                    del top_ten_repos[matching_key]
+                    top_ten_repos[repo_identifier] = total_ops
+
+        # Below probably won't work yet, Needs each value passed in    ###############################
+        plt.pie(top_ten_repos)
+        plt.savefig(f'{node}-top_repos.jpg', dpi=500)
+        return("Repo Statistics")
 
     def operations(node, operations):
         '''
