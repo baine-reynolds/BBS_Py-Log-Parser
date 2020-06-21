@@ -6,33 +6,31 @@ class Graph:
         tasks = []
         executor = concurrent.futures.ProcessPoolExecutor()
         all_chrono_days = Graph.sort_days(hourly_breakdown.keys())
+
+        # Setup base graph details and colors
+        if dark_mode == True:
+            Graph.set_colors_dark()
+        else:
+            Graph.set_colors_light()
+        Graph.set_generic_graph_details()
+
         # Line Graphs
-        tasks.append(executor.submit(Graph.clones, node, all_chrono_days, hourly_breakdown, dark_mode))
-        tasks.append(executor.submit(Graph.fetches, node, all_chrono_days, hourly_breakdown, dark_mode))
-        tasks.append(executor.submit(Graph.pushes, node, all_chrono_days, hourly_breakdown, dark_mode))
-        tasks.append(executor.submit(Graph.ref_ads, node, all_chrono_days, hourly_breakdown, dark_mode))
-        tasks.append(executor.submit(Graph.shallow_clones, node, all_chrono_days, hourly_breakdown, dark_mode))
-        tasks.append(executor.submit(Graph.summary, node, all_chrono_days, hourly_breakdown, dark_mode))
-        tasks.append(executor.submit(Graph.max_connections, node, all_chrono_days, hourly_breakdown, dark_mode))
-        tasks.append(executor.submit(Graph.protocols, node, all_chrono_days, hourly_breakdown, dark_mode))
+        tasks.append(executor.submit(Graph.clones, node, all_chrono_days, hourly_breakdown))
+        tasks.append(executor.submit(Graph.fetches, node, all_chrono_days, hourly_breakdown))
+        tasks.append(executor.submit(Graph.pushes, node, all_chrono_days, hourly_breakdown))
+        tasks.append(executor.submit(Graph.ref_ads, node, all_chrono_days, hourly_breakdown))
+        tasks.append(executor.submit(Graph.shallow_clones, node, all_chrono_days, hourly_breakdown))
+        tasks.append(executor.submit(Graph.summary, node, all_chrono_days, hourly_breakdown))
+        tasks.append(executor.submit(Graph.max_connections, node, all_chrono_days, hourly_breakdown))
+        tasks.append(executor.submit(Graph.protocols, node, all_chrono_days, hourly_breakdown))
 
         # Pie Graphs
-        tasks.append(executor.submit(Graph.operations, node, system_stats['operations'], dark_mode))
+        #tasks.append(executor.submit(Graph.repos, node, system_stats['repo_stats'], dark_mode))
+        tasks.append(executor.submit(Graph.operations, node, system_stats['operations']))
+        
         for task in concurrent.futures.as_completed(tasks):
             if verbose:
                 print(f"Graph complete: {task.result()}")
-
-#        Graph.clones(node, all_chrono_days, hourly_breakdown, dark_mode)
-#        Graph.fetches(node, all_chrono_days, hourly_breakdown, dark_mode)
-#        Graph.pushes(node, all_chrono_days, hourly_breakdown, dark_mode)
-#        Graph.ref_ads(node, all_chrono_days, hourly_breakdown, dark_mode)
-#        Graph.shallow_clones(node, all_chrono_days, hourly_breakdown, dark_mode)
-#        Graph.summary(node, all_chrono_days, hourly_breakdown, dark_mode)
-#        Graph.max_connections(node, all_chrono_days, hourly_breakdown, dark_mode)
-#        Graph.protocols(node, all_chrono_days, hourly_breakdown, dark_mode)
-
-        #Graph.repos(system_stats['repo_stats'], dark_mode)
-#        Graph.operations(node, system_stats['operations'], dark_mode)
         return
 
     def sort_days(hourly_breakdown_keys):
@@ -41,7 +39,29 @@ class Graph:
         all_chrono_days.sort()
         return all_chrono_days
 
-    def clones(node, all_chrono_days, hourly_breakdown, dark_mode):
+    def set_colors_light():
+        Graph.blue='#001a87'
+        Graph.green='#067300'
+        Graph.red='#940901'
+        Graph.yellow='#a5ab03'
+        Graph.cyan='#0295a8'
+        plt.style.use('default')
+
+    def set_colors_dark():
+        Graph.blue='#11249c'  
+        Graph.green='#11520d'
+        Graph.red='#5e130e'
+        Graph.yellow='#6f7314'
+        Graph.cyan='#167682'
+        plt.style.use('dark_background')
+
+    def set_generic_graph_details():
+        plt.figure(figsize=(16,10))
+        plt.subplots_adjust(top=0.96, bottom=0.05, left=0.04, right=0.99, wspace=0.9)
+        # bottom=0, right=1, left=0, hspace=0, wspace=0)
+        plt.margins(0.01,0.05)
+
+    def clones(node, all_chrono_days, hourly_breakdown):
         clone_all_data = []
         clone_hit_data = []
         clone_miss_data = []
@@ -61,22 +81,13 @@ class Graph:
                     clone_hit_data.append(0)
                     clone_miss_data.append(0)
 
-        plt.figure(figsize=(16,10))
-        plt.subplots_adjust(top=0.96, bottom=0.05, left=0.04, right=0.99, wspace=0.9)
-        # bottom=0, right=1, left=0, hspace=0, wspace=0)
-        plt.margins(0.01,0.05)
-        textprops={'color': 'black'}
-        if dark_mode:
-            textprops = {'color': 'white'}
-            plt.style.use('dark_background')
-        plt.plot(date_labels, clone_hit_data, 'g-', label="Clone/Cache Hit")
-        plt.plot(date_labels, clone_miss_data, 'r-', label="Clone/Cache Miss")
-        plt.fill_between(date_labels, clone_hit_data, color='green', alpha=0.25)
-        plt.fill_between(date_labels, clone_miss_data, color='red', alpha=0.25)
-        plt.plot(date_labels, clone_all_data, 'b-', label="All Clones")
-        #plt.plot([], operation], labels=labels, textprops=textprops)
+        plt.plot(date_labels, clone_hit_data, '-', color=Graph.green, label="Clone/Cache Hit")
+        plt.plot(date_labels, clone_miss_data, '-', color=Graph.red, label="Clone/Cache Miss")
+        plt.fill_between(date_labels, clone_hit_data, color=Graph.green, alpha=0.35)
+        plt.fill_between(date_labels, clone_miss_data, color=Graph.red, alpha=0.35)
+        plt.plot(date_labels, clone_all_data, '-', color=Graph.blue, label="All Clones")
         plt.title(f"Clone Operations ({node})", fontdict={'fontweight': 'bold', 'fontsize': 20})
-        plt.xlabel('')
+        plt.xlabel('')        
         plt.legend()
         plt.xticks(date_labels[::24])
         #plt.ylabel('Number of Clones', fontdict={'fontweight': 'bold', 'fontsize': 14})
@@ -84,7 +95,7 @@ class Graph:
         plt.savefig(f'{node}-clones.jpg', dpi=500)
         return("Clones")
 
-    def fetches(node, all_chrono_days, hourly_breakdown, dark_mode):
+    def fetches(node, all_chrono_days, hourly_breakdown):
         fetch_all_data = []
         fetch_hit_data = []
         fetch_miss_data = []
@@ -104,20 +115,11 @@ class Graph:
                     fetch_hit_data.append(0)
                     fetch_miss_data.append(0)
 
-        plt.figure(figsize=(16,10))
-        plt.subplots_adjust(top=0.96, bottom=0.05, left=0.04, right=0.99, wspace=0.9)
-        # bottom=0, right=1, left=0, hspace=0, wspace=0)
-        plt.margins(0.01,0.05)
-        textprops={'color': 'black'}
-        if dark_mode:
-            textprops = {'color': 'white'}
-            plt.style.use('dark_background')
-        plt.plot(date_labels, fetch_hit_data, 'g-', label="Fetch/Cache Hit")
-        plt.plot(date_labels, fetch_miss_data, 'r-', label="Fetch/Cache Miss")
-        plt.fill_between(date_labels, fetch_hit_data, color='green', alpha=0.25)
-        plt.fill_between(date_labels, fetch_miss_data, color='red', alpha=0.25)
-        plt.plot(date_labels, fetch_all_data, 'b-', label="All Fetches")
-        #plt.plot([], operation], labels=labels, textprops=textprops)
+        plt.plot(date_labels, fetch_hit_data, '-', color=Graph.green, label="Fetch/Cache Hit")
+        plt.plot(date_labels, fetch_miss_data, '-', color=Graph.red, label="Fetch/Cache Miss")
+        plt.fill_between(date_labels, fetch_hit_data, color=Graph.green, alpha=0.35)
+        plt.fill_between(date_labels, fetch_miss_data, color=Graph.red, alpha=0.35)
+        plt.plot(date_labels, fetch_all_data, '-', color=Graph.blue, label="All Fetches")
         plt.title(f"Fetch Operations ({node})", fontdict={'fontweight': 'bold', 'fontsize': 20})
         plt.xlabel('')
         plt.legend()
@@ -127,7 +129,7 @@ class Graph:
         plt.savefig(f'{node}-fetches.jpg', dpi=500)
         return("Fetches")
 
-    def pushes(node, all_chrono_days, hourly_breakdown, dark_mode):
+    def pushes(node, all_chrono_days, hourly_breakdown):
         push_all_data = []
         date_labels = []
         hours = range(0, 24)
@@ -141,17 +143,8 @@ class Graph:
                     # start of day may not be at 0 so this fills in the blanks to have a complete 24 hour day
                     push_all_data.append(0)
 
-        plt.figure(figsize=(16,10))
-        plt.subplots_adjust(top=0.96, bottom=0.05, left=0.04, right=0.99, wspace=0.9)
-        # bottom=0, right=1, left=0, hspace=0, wspace=0)
-        plt.margins(0.01,0.05)
-        textprops={'color': 'black'}
-        if dark_mode:
-            textprops = {'color': 'white'}
-            plt.style.use('dark_background')
-        plt.plot(date_labels, push_all_data, 'c-', label="All pushes")
-        plt.fill_between(date_labels, push_all_data, color='cyan', alpha=0.25)
-        #plt.plot([], operation], labels=labels, textprops=textprops)
+        plt.plot(date_labels, push_all_data, '-', color=Graph.cyan, label="All Pushes")
+        plt.fill_between(date_labels, push_all_data, color=Graph.cyan, alpha=0.35)
         plt.title(f"push Operations ({node})", fontdict={'fontweight': 'bold', 'fontsize': 20})
         plt.xlabel('')
         plt.legend()
@@ -161,7 +154,7 @@ class Graph:
         plt.savefig(f'{node}-pushes.jpg', dpi=500)
         return("Pushes")
 
-    def ref_ads(node, all_chrono_days, hourly_breakdown, dark_mode):
+    def ref_ads(node, all_chrono_days, hourly_breakdown):
         ref_ad_all_data = []
         ref_ad_hit_data = []
         ref_ad_miss_data = []
@@ -181,20 +174,11 @@ class Graph:
                     ref_ad_hit_data.append(0)
                     ref_ad_miss_data.append(0)
 
-        plt.figure(figsize=(16,10))
-        plt.subplots_adjust(top=0.96, bottom=0.05, left=0.04, right=0.99, wspace=0.9)
-        # bottom=0, right=1, left=0, hspace=0, wspace=0)
-        plt.margins(0.01,0.05)
-        textprops={'color': 'black'}
-        if dark_mode:
-            textprops = {'color': 'white'}
-            plt.style.use('dark_background')
-        plt.plot(date_labels, ref_ad_hit_data, 'g-', label="ref/Cache Hit")
-        plt.plot(date_labels, ref_ad_miss_data, 'r-', label="ref/Cache Miss")
-        plt.fill_between(date_labels, ref_ad_hit_data, color='green', alpha=0.25)
-        plt.fill_between(date_labels, ref_ad_miss_data, color='red', alpha=0.25)
-        plt.plot(date_labels, ref_ad_all_data, 'b-', label="All refs")
-        #plt.plot([], operation], labels=labels, textprops=textprops)
+        plt.plot(date_labels, ref_ad_hit_data, '-', color=Graph.green, label="Ref Advertisement/Cache Hit")
+        plt.plot(date_labels, ref_ad_miss_data, '-', color=Graph.red, label="Ref Advertisement/Cache Miss")
+        plt.fill_between(date_labels, ref_ad_hit_data, color=Graph.green, alpha=0.35)
+        plt.fill_between(date_labels, ref_ad_miss_data, color=Graph.red, alpha=0.35)
+        plt.plot(date_labels, ref_ad_all_data, '-', color=Graph.blue, label="All refs")
         plt.title(f"ref Operations ({node})", fontdict={'fontweight': 'bold', 'fontsize': 20})
         plt.xlabel('')
         plt.legend()
@@ -204,7 +188,7 @@ class Graph:
         plt.savefig(f'{node}-refs.jpg', dpi=500)
         return("Ref Advertisements")
 
-    def shallow_clones(node, all_chrono_days, hourly_breakdown, dark_mode):
+    def shallow_clones(node, all_chrono_days, hourly_breakdown):
         shallow_clone_all_data = []
         shallow_clone_hit_data = []
         shallow_clone_miss_data = []
@@ -224,20 +208,11 @@ class Graph:
                     shallow_clone_hit_data.append(0)
                     shallow_clone_miss_data.append(0)
 
-        plt.figure(figsize=(16,10))
-        plt.subplots_adjust(top=0.96, bottom=0.05, left=0.04, right=0.99, wspace=0.9)
-        # bottom=0, right=1, left=0, hspace=0, wspace=0)
-        plt.margins(0.01,0.05)
-        textprops={'color': 'black'}
-        if dark_mode:
-            textprops = {'color': 'white'}
-            plt.style.use('dark_background')
-        plt.plot(date_labels, shallow_clone_hit_data, 'g-', label="shallow_clone/Cache Hit")
-        plt.plot(date_labels, shallow_clone_miss_data, 'r-', label="shallow_clone/Cache Miss")
-        plt.fill_between(date_labels, shallow_clone_hit_data, color='green', alpha=0.25)
-        plt.fill_between(date_labels, shallow_clone_miss_data, color='red', alpha=0.25)
-        plt.plot(date_labels, shallow_clone_all_data, 'b-', label="All shallow_clones")
-        #plt.plot([], operation], labels=labels, textprops=textprops)
+        plt.plot(date_labels, shallow_clone_hit_data, '-', color=Graph.green, label="Shallow Clone/Cache Hit")
+        plt.plot(date_labels, shallow_clone_miss_data, '-', color=Graph.red, label="Shallow Clone/Cache Miss")
+        plt.fill_between(date_labels, shallow_clone_hit_data, color=Graph.green, alpha=0.35)
+        plt.fill_between(date_labels, shallow_clone_miss_data, color=Graph.red, alpha=0.35)
+        plt.plot(date_labels, shallow_clone_all_data, '-', color=Graph.blue, label="All Shallow Clones")
         plt.title(f"shallow_clone Operations ({node})", fontdict={'fontweight': 'bold', 'fontsize': 20})
         plt.xlabel('')
         plt.legend()
@@ -247,7 +222,7 @@ class Graph:
         plt.savefig(f'{node}-shallow_shallow_clones.jpg', dpi=500)
         return("Shallow Clones")
 
-    def summary(node, all_chrono_days, hourly_breakdown, dark_mode):
+    def summary(node, all_chrono_days, hourly_breakdown):
         clone_data = []
         shallow_data = []
         fetch_data = []
@@ -270,23 +245,14 @@ class Graph:
                     fetch_data.append(0)
                     push_data.append(0)
 
-        plt.figure(figsize=(16,10))
-        plt.subplots_adjust(top=0.96, bottom=0.05, left=0.04, right=0.99, wspace=0.9)
-        # bottom=0, right=1, left=0, hspace=0, wspace=0)
-        plt.margins(0.01,0.05)
-        textprops={'color': 'black'}
-        if dark_mode:
-            textprops = {'color': 'white'}
-            plt.style.use('dark_background')
-        plt.plot(date_labels, clone_data, 'r-', label="All Clones")
-        plt.plot(date_labels, shallow_data, 'y-', label="All Shallow Clones")
-        plt.plot(date_labels, fetch_data, 'g-', label="All Fetches")
-        plt.plot(date_labels, push_data, 'c-', label="All Pushes")
-        plt.fill_between(date_labels, clone_data, color='red', alpha=0.25)
-        plt.fill_between(date_labels, shallow_data, color='yellow', alpha=0.25)
-        plt.fill_between(date_labels, fetch_data, color='green', alpha=0.25)
-        plt.fill_between(date_labels, push_data, color='cyan', alpha=0.25)
-        #plt.plot([], operation], labels=labels, textprops=textprops)
+        plt.plot(date_labels, fetch_data, '-', color=Graph.green, label="All Fetches")
+        plt.plot(date_labels, clone_data, '-', color=Graph.red, label="All Clones")
+        plt.plot(date_labels, shallow_data, '-', color=Graph.yellow, label="All Shallow Clones")
+        plt.plot(date_labels, push_data, '-', color=Graph.cyan, label="All Pushes")
+        plt.fill_between(date_labels, fetch_data, color=Graph.green, alpha=0.35)
+        plt.fill_between(date_labels, clone_data, color=Graph.red, alpha=0.35)
+        plt.fill_between(date_labels, shallow_data, color=Graph.yellow, alpha=0.35)
+        plt.fill_between(date_labels, push_data, color=Graph.cyan, alpha=0.35)
         plt.title(f"All Operations Summarized ({node})", fontdict={'fontweight': 'bold', 'fontsize': 20})
         plt.xlabel('')
         plt.legend()
@@ -296,7 +262,7 @@ class Graph:
         plt.savefig(f'{node}-summary.jpg', dpi=500)
         return("Summary")
 
-    def max_connections(node, all_chrono_days, hourly_breakdown, dark_mode):
+    def max_connections(node, all_chrono_days, hourly_breakdown):
         max_connections_data = []
         date_labels = []
         hours = range(0, 24)
@@ -310,17 +276,8 @@ class Graph:
                     # start of day may not be at 0 so this fills in the blanks to have a complete 24 hour day
                     max_connections_data.append(0)
 
-        plt.figure(figsize=(16,10))
-        plt.subplots_adjust(top=0.96, bottom=0.05, left=0.04, right=0.99, wspace=0.9)
-        # bottom=0, right=1, left=0, hspace=0, wspace=0)
-        plt.margins(0.01,0.05)
-        textprops={'color': 'black'}
-        if dark_mode:
-            textprops = {'color': 'white'}
-            plt.style.use('dark_background')
-        plt.plot(date_labels, max_connections_data, 'b-', label="Max Concurrent Connections")
-        plt.fill_between(date_labels, max_connections_data, color='blue', alpha=0.25)
-        #plt.plot([], operation], labels=labels, textprops=textprops)
+        plt.plot(date_labels, max_connections_data, '-', color=Graph.blue, label="Max Concurrent Connections")
+        plt.fill_between(date_labels, max_connections_data, color=Graph.blue, alpha=0.35)
         plt.title(f"Maximum Concurrent SCM-Hosting Operations ({node})", fontdict={'fontweight': 'bold', 'fontsize': 20})
         plt.xlabel('')
         plt.legend()
@@ -329,7 +286,7 @@ class Graph:
         plt.savefig(f'{node}-max_connections.jpg', dpi=500)
         return("Max Connections")
 
-    def protocols(node, all_chrono_days, hourly_breakdown, dark_mode):
+    def protocols(node, all_chrono_days, hourly_breakdown):
         ssh_operations_data = []
         http_operations_data = []
         date_labels = []
@@ -346,17 +303,8 @@ class Graph:
                     ssh_operations_data.append(0)
                     http_operations_data.append(0)
 
-        plt.figure(figsize=(16,10))
-        plt.subplots_adjust(top=0.96, bottom=0.05, left=0.04, right=0.99, wspace=0.9)
-        # bottom=0, right=1, left=0, hspace=0, wspace=0)
-        plt.margins(0.01,0.05)
-        textprops={'color': 'black'}
-        if dark_mode:
-            textprops = {'color': 'white'}
-            plt.style.use('dark_background')
-        plt.plot(date_labels, ssh_operations_data, 'r-', label="Git SSH Operations") 
-        plt.plot(date_labels, http_operations_data, 'g-', label="Git HTTP Operations")
-        #plt.plot([], operation], labels=labels, textprops=textprops)
+        plt.plot(date_labels, ssh_operations_data, '-', color=Graph.red, label="Git SSH Operations") 
+        plt.plot(date_labels, http_operations_data, '-', color=Graph.green, label="Git HTTP Operations")
         plt.title(f"Git Protocols ({node})", fontdict={'fontweight': 'bold', 'fontsize': 20})
         plt.xlabel('')
         plt.legend()
@@ -365,7 +313,7 @@ class Graph:
         plt.savefig(f'{node}-protocols.jpg', dpi=500)
         return("Git Protocols")
 
-    def repos(repo_stats, dark_mode):
+    def repos(node, repo_stats, dark_mode):
         '''
         Accepts dict{repo_stats}
             "repo_stats": {
@@ -378,16 +326,11 @@ class Graph:
                     }
                     ...
             }
-        Returns path to saved pie chart
         '''
         pass
-        # Per repository
-        #for repo_identifier in repo_stats:
-            
-        #plt.title(f"")
-        #labels = [""]
+        #return("Repo Statistics")
 
-    def operations(node, operations, dark_mode):
+    def operations(node, operations):
         '''
         Accepts dict{operations}
             "operations": {
@@ -396,24 +339,14 @@ class Graph:
                            "rest": int,
                            "web_ui": int,
                            "filesystem": int}
-        
-        Returns path to saved pie chart file
         '''
-        plt.figure(figsize=(16,10))
-        textprops={'color': 'black'}
-        if dark_mode:
-            textprops = {'color': 'white'}
-            plt.style.use('dark_background')
-        
         labels = ["git http", "git ssh", "rest", "web_ui", "filesystem"]
-        plt.pie([operations['git_http'], operations['git_ssh'], operations['rest'], operations['web_ui'], operations['filesystem']], labels=labels, textprops=textprops)
+        plt.pie([operations['git_http'], operations['git_ssh'], operations['rest'], operations['web_ui'], operations['filesystem']], labels=labels)
         plt.title(f"Distribution of Operations ({node})")
         #plt.xlabel('')
         #plt.ylabel('')
         plt.savefig(f'{node}-operations.jpg', dpi=500)
         return("Operations")
-
-
 
 
 
