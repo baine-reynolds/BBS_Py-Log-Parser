@@ -36,7 +36,7 @@ def main():
             export_json(node, hourly_breakdown, system_stats)
             print(f"Created '{node}-access_logs_parsed.json' in working directory")
         else:
-            Graph.graph_parsed(node, hourly_breakdown, system_stats, options.dark_mode)
+            Graph.graph_parsed(node, hourly_breakdown, system_stats, options.dark_mode, options.verbose)
             combine_png_to_pdf(node)
             print(f"Created pdf of all graphs for {node} found at {node}.pdf")
 
