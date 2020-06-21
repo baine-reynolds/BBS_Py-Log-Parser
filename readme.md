@@ -8,7 +8,7 @@ Run the "pylogparser.py" file pointed at the "application-logs" directory from a
 
 You can also pass a directory which contains multiple support zips and the tool will then name each pdf created based on the folder directory naming. For Example, if you were to use the path:
 
-        python3 plugin-checker.py -f /home/<user-name>/Downloads/multi-nodes
+        python3 plugin-checker.py -p /home/<user-name>/Downloads/multi-nodes
     
 Where "multi-nodes" is a directory containing...
 
