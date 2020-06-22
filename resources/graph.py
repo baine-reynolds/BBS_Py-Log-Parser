@@ -1,10 +1,7 @@
 import matplotlib.pyplot as plt
-import concurrent.futures
 
 class Graph:
     def graph_parsed(node, hourly_breakdown, system_stats, dark_mode, verbose):
-        tasks = []
-        executor = concurrent.futures.ProcessPoolExecutor()
         all_chrono_days = Graph.sort_days(hourly_breakdown.keys())
 
         # Setup base graph details and colors
@@ -12,25 +9,21 @@ class Graph:
             Graph.set_colors_dark()
         else:
             Graph.set_colors_light()
-        Graph.set_generic_graph_details()
 
         # Line Graphs
-        tasks.append(executor.submit(Graph.clones, node, all_chrono_days, hourly_breakdown))
-        tasks.append(executor.submit(Graph.fetches, node, all_chrono_days, hourly_breakdown))
-        tasks.append(executor.submit(Graph.pushes, node, all_chrono_days, hourly_breakdown))
-        tasks.append(executor.submit(Graph.ref_ads, node, all_chrono_days, hourly_breakdown))
-        tasks.append(executor.submit(Graph.shallow_clones, node, all_chrono_days, hourly_breakdown))
-        tasks.append(executor.submit(Graph.summary, node, all_chrono_days, hourly_breakdown))
-        tasks.append(executor.submit(Graph.max_connections, node, all_chrono_days, hourly_breakdown))
-        tasks.append(executor.submit(Graph.protocols, node, all_chrono_days, hourly_breakdown))
+        Graph.clones(node, all_chrono_days, hourly_breakdown)
+        Graph.fetches(node, all_chrono_days, hourly_breakdown)
+        Graph.pushes(node, all_chrono_days, hourly_breakdown)
+        Graph.ref_ads(node, all_chrono_days, hourly_breakdown)
+        Graph.shallow_clones(node, all_chrono_days, hourly_breakdown)
+        Graph.summary(node, all_chrono_days, hourly_breakdown)
+        Graph.max_connections(node, all_chrono_days, hourly_breakdown)
+        Graph.protocols(node, all_chrono_days, hourly_breakdown)
 
         # Pie Graphs
-        #tasks.append(executor.submit(Graph.repos, node, system_stats['repo_stats'], dark_mode))
-        tasks.append(executor.submit(Graph.operations, node, system_stats['operations']))
+        #Graph.repos(node, system_stats['repo_stats'])
+        Graph.operations(node, system_stats['operations'])
 
-        for task in concurrent.futures.as_completed(tasks):
-            if verbose:
-                print(f"Graph complete: {task.result()}")
         return
 
     def sort_days(hourly_breakdown_keys):
@@ -45,7 +38,7 @@ class Graph:
         Graph.red='#940901'
         Graph.yellow='#a5ab03'
         Graph.cyan='#0295a8'
-        plt.style.use('default')
+        Graph.plot_style = 'default'
 
     def set_colors_dark():
         Graph.blue='#11249c'  
@@ -53,15 +46,17 @@ class Graph:
         Graph.red='#5e130e'
         Graph.yellow='#6f7314'
         Graph.cyan='#167682'
-        plt.style.use('dark_background')
+        Graph.plot_style = 'dark_background'
 
     def set_generic_graph_details():
+        plt.style.use(Graph.plot_style)
         plt.figure(figsize=(16,10))
         plt.subplots_adjust(top=0.96, bottom=0.05, left=0.04, right=0.99, wspace=0.9)
         # bottom=0, right=1, left=0, hspace=0, wspace=0)
         plt.margins(0.01,0.05)
 
     def clones(node, all_chrono_days, hourly_breakdown):
+        Graph.set_generic_graph_details()
         clone_all_data = []
         clone_hit_data = []
         clone_miss_data = []
@@ -93,9 +88,11 @@ class Graph:
         #plt.ylabel('Number of Clones', fontdict={'fontweight': 'bold', 'fontsize': 14})
 
         plt.savefig(f'{node}-clones.jpg', dpi=500)
+        plt.clf()
         return("Clones")
 
     def fetches(node, all_chrono_days, hourly_breakdown):
+        Graph.set_generic_graph_details()
         fetch_all_data = []
         fetch_hit_data = []
         fetch_miss_data = []
@@ -127,9 +124,11 @@ class Graph:
         #plt.ylabel('Number of Fetches', fontdict={'fontweight': 'bold', 'fontsize': 14})
 
         plt.savefig(f'{node}-fetches.jpg', dpi=500)
+        plt.clf()
         return("Fetches")
 
     def pushes(node, all_chrono_days, hourly_breakdown):
+        Graph.set_generic_graph_details()
         push_all_data = []
         date_labels = []
         hours = range(0, 24)
@@ -152,9 +151,11 @@ class Graph:
         #plt.ylabel('Number of pushes', fontdict={'fontweight': 'bold', 'fontsize': 14})
 
         plt.savefig(f'{node}-pushes.jpg', dpi=500)
+        plt.clf()
         return("Pushes")
 
     def ref_ads(node, all_chrono_days, hourly_breakdown):
+        Graph.set_generic_graph_details()
         ref_ad_all_data = []
         ref_ad_hit_data = []
         ref_ad_miss_data = []
@@ -186,9 +187,11 @@ class Graph:
         #plt.ylabel('Number of refs', fontdict={'fontweight': 'bold', 'fontsize': 14})
 
         plt.savefig(f'{node}-refs.jpg', dpi=500)
+        plt.clf()
         return("Ref Advertisements")
 
     def shallow_clones(node, all_chrono_days, hourly_breakdown):
+        Graph.set_generic_graph_details()
         shallow_clone_all_data = []
         shallow_clone_hit_data = []
         shallow_clone_miss_data = []
@@ -213,16 +216,18 @@ class Graph:
         plt.fill_between(date_labels, shallow_clone_hit_data, color=Graph.green, alpha=0.35)
         plt.fill_between(date_labels, shallow_clone_miss_data, color=Graph.red, alpha=0.35)
         plt.plot(date_labels, shallow_clone_all_data, '-', color=Graph.blue, label="All Shallow Clones")
-        plt.title(f"shallow_clone Operations ({node})", fontdict={'fontweight': 'bold', 'fontsize': 20})
+        plt.title(f"Shallow Clone Operations ({node})", fontdict={'fontweight': 'bold', 'fontsize': 20})
         plt.xlabel('')
         plt.legend()
         plt.xticks(date_labels[::24])
         #plt.ylabel('Number of shallow_clones', fontdict={'fontweight': 'bold', 'fontsize': 14})
 
         plt.savefig(f'{node}-shallow_shallow_clones.jpg', dpi=500)
+        plt.clf()
         return("Shallow Clones")
 
     def summary(node, all_chrono_days, hourly_breakdown):
+        Graph.set_generic_graph_details()
         clone_data = []
         shallow_data = []
         fetch_data = []
@@ -260,9 +265,11 @@ class Graph:
         #plt.ylabel('Number of Git Operations', fontdict={'fontweight': 'bold', 'fontsize': 14})
 
         plt.savefig(f'{node}-summary.jpg', dpi=500)
+        plt.clf()
         return("Summary")
 
     def max_connections(node, all_chrono_days, hourly_breakdown):
+        Graph.set_generic_graph_details()
         max_connections_data = []
         date_labels = []
         hours = range(0, 24)
@@ -284,9 +291,11 @@ class Graph:
         plt.xticks(date_labels[::24])
 
         plt.savefig(f'{node}-max_connections.jpg', dpi=500)
+        plt.clf()
         return("Max Connections")
 
     def protocols(node, all_chrono_days, hourly_breakdown):
+        Graph.set_generic_graph_details()
         ssh_operations_data = []
         http_operations_data = []
         date_labels = []
@@ -311,6 +320,7 @@ class Graph:
         plt.xticks(date_labels[::24])
 
         plt.savefig(f'{node}-protocols.jpg', dpi=500)
+        plt.clf()
         return("Git Protocols")
 
     def repos(node, repo_stats):
@@ -327,6 +337,7 @@ class Graph:
                     ...
             }
         '''
+        Graph.set_generic_graph_details()
         top_ten_repos = {}
         # Build out top ten repos with most interactions (not counting refs)
         for repo_identifier in repo_stats:
@@ -345,7 +356,9 @@ class Graph:
 
         # Below probably won't work yet, Needs each value passed in    ###############################
         plt.pie(top_ten_repos)
+        plt.title(f"Top Ten CLoned Repositories ({node})", fontdict={'fontweight': 'bold', 'fontsize': 20})
         plt.savefig(f'{node}-top_repos.jpg', dpi=500)
+        plt.clf()
         return("Repo Statistics")
 
     def operations(node, operations):
@@ -358,12 +371,14 @@ class Graph:
                            "web_ui": int,
                            "filesystem": int}
         '''
+        Graph.set_generic_graph_details()
         labels = ["git http", "git ssh", "rest", "web_ui", "filesystem"]
         plt.pie([operations['git_http'], operations['git_ssh'], operations['rest'], operations['web_ui'], operations['filesystem']], labels=labels)
         plt.title(f"Distribution of Operations ({node})")
         #plt.xlabel('')
         #plt.ylabel('')
         plt.savefig(f'{node}-operations.jpg', dpi=500)
+        plt.clf()
         return("Operations")
 
 
