@@ -23,7 +23,8 @@ class Graph:
         # Pie Graphs
         #Graph.repos(node, system_stats['repo_stats'])
         Graph.operations(node, system_stats['operations'])
-
+        plt.close("all")
+        
         return
 
     def sort_days(hourly_breakdown_keys):
