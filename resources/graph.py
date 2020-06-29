@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import numpy as np
 
 class Graph:
     def graph_parsed(node, hourly_breakdown, system_stats, dark_mode, verbose):
@@ -21,8 +22,17 @@ class Graph:
         Graph.protocols(node, all_chrono_days, hourly_breakdown)
 
         # Pie Graphs
-        #Graph.repos(node, system_stats['repo_stats'])
         Graph.operations(node, system_stats['operations'])
+        plt.close('all')
+
+        # Stacked and Grouped Bar Graphs for repos
+        top_clones, top_shallows, top_fetches, top_pushes, top_activity = Graph.sort_top_repos(system_stats['repo_stats'])
+
+        Graph.top_clones(node, top_clones)
+        Graph.top_shallows(node, top_shallows)
+        Graph.top_fetches(node, top_fetches)
+        Graph.top_pushes(node, top_pushes)
+        Graph.top_activity(node, top_activity)
         plt.close("all")
 
         return
@@ -35,14 +45,16 @@ class Graph:
 
     def set_colors_light():
         Graph.blue='#001a87'
+        Graph.lightblue='#4287f5'
         Graph.green='#067300'
+        Graph.lightgreen='#56d658'
         Graph.red='#940901'
         Graph.yellow='#a5ab03'
         Graph.cyan='#0295a8'
         Graph.plot_style = 'default'
 
     def set_colors_dark():
-        Graph.blue='#11249c'  
+        Graph.blue='#11249c'
         Graph.green='#11520d'
         Graph.red='#5e130e'
         Graph.yellow='#6f7314'
@@ -324,44 +336,6 @@ class Graph:
         plt.clf()
         return("Git Protocols")
 
-    def repos(node, repo_stats):
-        '''
-        Accepts dict{repo_stats}
-            "repo_stats": {
-                    repo_identifier: {
-                        "total_clones": 0, "total_clone_misses": 2,
-                        "total_shallow_clones": 0, "total_shallow_clone_misses": 0,
-                        "total_fetches": 0, "total_fetch_misses": 0,
-                        "total_ref_ads": 174663, "total_ref_ad_miss": 2,
-                        "total_pushes": 0
-                    }
-                    ...
-            }
-        '''
-        Graph.set_generic_graph_details()
-        top_ten_repos = {}
-        # Build out top ten repos with most interactions (not counting refs)
-        for repo_identifier in repo_stats:
-            total_ops = repo_identifier['total_clones'] + repo_identifier['total_clone_misses'] + \
-                        repo_identifier['total_shallow_clones'] + repo_identifier['total_shallow_clone_misses'] + \
-                        repo_identifier['total_fatches'] + repo_identifier['total_fetch_misses'] + \
-                        repo_identifier['pushes']
-            if len(top_ten_repos) < 10:
-                top_ten_repos[repo_identifier] = total_ops
-            else:
-                min_value = min(top_ten_repos.values())
-                matching_key = [key for key in top_ten_repos if top_ten_repos[key] == min_value]
-                if total_ops > min_value:
-                    del top_ten_repos[matching_key]
-                    top_ten_repos[repo_identifier] = total_ops
-
-        # Below probably won't work yet, Needs each value passed in    ###############################
-        plt.pie(top_ten_repos)
-        plt.title(f"Top Ten CLoned Repositories ({node})", fontdict={'fontweight': 'bold', 'fontsize': 20})
-        plt.savefig(f'{node}-top_repos.jpg', dpi=500)
-        plt.clf()
-        return("Repo Statistics")
-
     def operations(node, operations):
         '''
         Accepts dict{operations}
@@ -381,3 +355,181 @@ class Graph:
         plt.savefig(f'{node}-operations.jpg', dpi=500)
         plt.clf()
         return("Operations")
+
+    def sort_top_repos(repo_stats):
+        # Build out first 10 repos (!!! Requires Python3.6+ to ensure dict order !!!)
+        first_10_repos = {repo: repo_stats[repo] for repo in list(repo_stats)[:10]}
+        top_clones = first_10_repos.copy()
+        top_shallows = first_10_repos.copy()
+        top_fetches = first_10_repos.copy()
+        top_pushes = first_10_repos.copy()
+        top_activity = first_10_repos.copy()
+
+        for repo in first_10_repos:
+            # Prevent repo from being compared again later
+            del repo_stats[repo]
+
+        lowest_clone_repo, lowest_clone_count = Graph.find_lowest_clone(top_clones)
+        lowest_shallow_repo, lowest_shallow_count = Graph.find_lowest_shallow(top_shallows)
+        lowest_fetch_repo, lowest_fetch_count = Graph.find_lowest_fetch(top_fetches)
+        lowest_push_repo, lowest_push_count = Graph.find_lowest_push(top_pushes)
+        lowest_activity_repo, lowest_activity_count = Graph.find_lowest_activity(top_activity)
+
+        # For remaining repos, compare stats and replace low activity with higher activity repos respectively
+        for repo, stats in repo_stats.items():
+            # Clones
+            if stats['total_clones'] + stats['total_clone_misses'] > lowest_clone_count:
+                del top_clones[lowest_clone_repo]
+                top_clones[repo] = stats
+                lowest_clone_repo, lowest_clone_count = Graph.find_lowest_clone(top_clones)
+            
+            # Shallow clones
+            if stats['total_shallow_clones'] + stats['total_shallow_clone_misses'] > lowest_shallow_count:
+                del top_shallows[lowest_shallow_repo]
+                top_shallows[repo] = stats
+                lowest_shallow_repo, lowest_shallow_count = Graph.find_lowest_shallow(top_shallows)
+
+            # Fetches
+            if stats['total_fetches'] + stats['total_fetch_misses'] > lowest_fetch_count:
+                del top_fetches[lowest_fetch_repo]
+                top_fetches[repo] = stats
+                lowest_fetch_repo, lowest_fetch_count = Graph.find_lowest_fetch(top_fetches)
+
+            # Pushes
+            if stats['total_pushes'] > lowest_push_count:
+                del top_pushes[lowest_push_repo]
+                top_pushes[repo] = stats
+                lowest_push_repo, lowest_push_count = Graph.find_lowest_push(top_pushes)
+
+            # Overall Activity
+            if Graph.sum_relevant_stats(stats) > lowest_activity_count:
+                del top_activity[lowest_activity_repo]
+                top_activity[repo] = stats
+                lowest_activity_repo, lowest_activity_count = Graph.find_lowest_activity(top_activity)
+
+        return top_clones, top_shallows, top_fetches, top_pushes, top_activity
+
+    def find_lowest_clone(top_clones):
+        values = []
+        repos = []
+        for repo, stats in top_clones.items():
+            values.append(stats['total_clones'] + stats['total_clone_misses'])
+            repos.append(repo)
+        index = values.index(min(values))
+
+        return repos[index], values[index]
+
+    def find_lowest_shallow(top_shallows):
+        values = []
+        repos = []
+        for repo, stats in top_shallows.items():
+            values.append(stats['total_shallow_clones'] + stats['total_shallow_clone_misses'])
+            repos.append(repo)
+        index = values.index(min(values))
+
+        return repos[index], values[index]
+
+    def find_lowest_fetch(top_fetches):
+        values = []
+        repos = []
+        for repo, stats in top_fetches.items():
+            values.append(stats['total_fetches'] + stats['total_fetch_misses'])
+            repos.append(repo)
+        index = values.index(min(values))
+
+        return repos[index], values[index]
+
+    def find_lowest_push(top_pushes):
+        values = []
+        repos = []
+        for repo, stats in top_pushes.items():
+            values.append(stats['total_pushes'])
+            repos.append(repo)
+        index = values.index(min(values))
+
+        return repos[index], values[index]
+
+    def find_lowest_activity(top_activity):
+        values = []
+        repos = []
+        for repo, stats in top_activity.items():
+            values.append(Graph.sum_relevant_stats(stats))
+            repos.append(repo)
+        index = values.index(min(values))
+
+        return repos[index], values[index]
+
+    def sum_relevant_stats(stats):
+        relevant_sum = stats['total_clones'] + stats['total_clone_misses'] + stats['total_shallow_clones'] + \
+                       stats['total_shallow_clone_misses'] + stats['total_fetches'] + stats['total_fetch_misses'] + stats['total_pushes']
+        return relevant_sum
+
+    def top_clones(node, top_clones):
+        '''
+        Accepts dict{top_clones}
+            "top_clones": {
+                    repo_identifier: {
+                        "total_clones": 0, "total_clone_misses": 2,
+                        "total_shallow_clones": 0, "total_shallow_clone_misses": 0,
+                        "total_fetches": 0, "total_fetch_misses": 0,
+                        "total_ref_ads": 174663, "total_ref_ad_miss": 2,
+                        "total_pushes": 0
+                    }
+                    ...
+            }
+        '''
+        Graph.set_generic_graph_details()
+        plt.figure(figsize=(16,10))
+        plt.subplots_adjust(top=0.96, bottom=0.05, left=0.04, right=0.99, wspace=0.9)
+        # Build out top ten repos with most interactions (not counting refs)
+        labels = []
+        clones = []
+        clone_misses = []
+        shallows = []
+        shallow_misses = []
+        fetches = []
+        fetch_misses = []
+        pushes = []
+
+        for repo, stats in top_clones.items():
+            labels.append(repo.replace('/', ' /\n'))
+            clones.append(stats['total_clones'])
+            clone_misses.append(stats['total_clone_misses'])
+            shallows.append(stats['total_shallow_clones'])
+            shallow_misses.append(stats['total_shallow_clone_misses'])
+            fetches.append(stats['total_fetches'])
+            fetch_misses.append(stats['total_fetch_misses'])
+            pushes.append(stats['total_pushes'])
+
+        index = np.arange(len(labels))
+        width = 0.2
+
+        p1 = plt.bar(index - width, clones, width, bottom=0, color=Graph.blue)
+        p1sub = plt.bar(index - width, clone_misses, width, bottom=clones, color=Graph.lightblue)
+        p2 = plt.bar(index, shallows, width, bottom=0, color=Graph.green)
+        p2sub = plt.bar(index, shallow_misses, width, bottom=shallows, color=Graph.lightgreen)
+        p3 = plt.bar(index + width, fetches, width, color=Graph.red)
+        p3sub = plt.bar(index + width, fetch_misses, width, bottom=fetches, color=Graph.yellow)
+        p4 = plt.bar(index + (width * 2), pushes, width, color=Graph.cyan)
+
+        plt.xticks(ticks=(index + width / 2), labels=labels, fontsize=8)
+        #plt.set_xticks(index + width / 2)
+        #plt.set_xticklabels(labels)
+        plt.legend((p1[0], p1sub[0], p2[0], p2sub[0], p3[0], p3sub[0], p4[0]), ('Clones', 'Clone Cache Misses', 'Shallow Clones', 'Shallow Clone Cache Misses', 'Fetches', 'Fetch Cache Miss', 'Pushes'))
+
+        plt.title(f"Top Ten Cloned Repositories ({node})", fontdict={'fontweight': 'bold', 'fontsize': 20})
+        plt.savefig(f'{node}-top_cloned.jpg', dpi=500)
+        plt.clf()
+        return("Repo Statistics")
+
+    def top_shallows(node, top_shallows):
+        pass
+
+    def top_fetches(node, top_fetches):
+        pass
+
+    def top_pushes(node, top_pushes):
+        pass
+
+    def top_activity(node, top_activity):
+        pass
