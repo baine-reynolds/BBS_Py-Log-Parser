@@ -22,7 +22,7 @@ Where "multi-nodes" is a directory containing...
 Then 2 pdfs will be created, one named "Node 1" another named "Node 2" (whatever the folder names are)
 
 # Dependencies:
-* [Python3](https://www.python.org/downloads/) This was written in python3.7 and requires at least 3.5+ to operate as expected.
+* [Python3](https://www.python.org/downloads/) This was written in python3.8 and requires at least 3.6+ to operate as expected.
 * [matplotlib](https://matplotlib.org/)
 
         pip3 install matplotlib --user
