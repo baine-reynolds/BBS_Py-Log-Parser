@@ -13,10 +13,11 @@ class Graph:
 
         # Line Graphs
         Graph.clones(node, all_chrono_days, hourly_breakdown)
+        Graph.shallow_clones(node, all_chrono_days, hourly_breakdown)
+        Graph.ref_ads(node, all_chrono_days, hourly_breakdown)
         Graph.fetches(node, all_chrono_days, hourly_breakdown)
         Graph.pushes(node, all_chrono_days, hourly_breakdown)
         Graph.ref_ads(node, all_chrono_days, hourly_breakdown)
-        Graph.shallow_clones(node, all_chrono_days, hourly_breakdown)
         Graph.summary(node, all_chrono_days, hourly_breakdown)
         Graph.max_connections(node, all_chrono_days, hourly_breakdown)
         Graph.protocols(node, all_chrono_days, hourly_breakdown)
@@ -104,11 +105,11 @@ class Graph:
         plt.clf()
         return("Clones")
 
-    def fetches(node, all_chrono_days, hourly_breakdown):
+    def shallow_clones(node, all_chrono_days, hourly_breakdown):
         Graph.set_generic_graph_details()
-        fetch_all_data = []
-        fetch_hit_data = []
-        fetch_miss_data = []
+        shallow_clone_all_data = []
+        shallow_clone_hit_data = []
+        shallow_clone_miss_data = []
         date_labels = []
         hours = range(0, 24)
         for day in all_chrono_days:
@@ -116,56 +117,29 @@ class Graph:
                 date_to_use = f"{str(day)[:4]}-{str(day)[4:6]}-{str(day)[6:8]} {hour:02d}"
                 date_labels.append(str(date_to_use))
                 try:
-                    fetch_all_data.append(hourly_breakdown[day][hour]['total_fetches'] + hourly_breakdown[day][hour]['total_fetch_misses'])
-                    fetch_hit_data.append(hourly_breakdown[day][hour]['total_fetches'])
-                    fetch_miss_data.append(hourly_breakdown[day][hour]['total_fetch_misses'])
+                    shallow_clone_all_data.append(hourly_breakdown[day][hour]['total_shallow_clones'] + hourly_breakdown[day][hour]['total_shallow_clone_misses'])
+                    shallow_clone_hit_data.append(hourly_breakdown[day][hour]['total_shallow_clones'])
+                    shallow_clone_miss_data.append(hourly_breakdown[day][hour]['total_shallow_clone_misses'])
                 except KeyError:
                     # start of day may not be at 0 so this fills in the blanks to have a complete 24 hour day
-                    fetch_all_data.append(0)
-                    fetch_hit_data.append(0)
-                    fetch_miss_data.append(0)
+                    shallow_clone_all_data.append(0)
+                    shallow_clone_hit_data.append(0)
+                    shallow_clone_miss_data.append(0)
 
-        plt.plot(date_labels, fetch_hit_data, '-', color=Graph.green, label="Fetch/Cache Hit")
-        plt.plot(date_labels, fetch_miss_data, '-', color=Graph.red, label="Fetch/Cache Miss")
-        plt.fill_between(date_labels, fetch_hit_data, color=Graph.green, alpha=0.35)
-        plt.fill_between(date_labels, fetch_miss_data, color=Graph.red, alpha=0.35)
-        plt.plot(date_labels, fetch_all_data, '-', color=Graph.blue, label="All Fetches")
-        plt.title(f"Fetch Operations ({node})", fontdict={'fontweight': 'bold', 'fontsize': 20})
+        plt.plot(date_labels, shallow_clone_hit_data, '-', color=Graph.green, label="Shallow Clone/Cache Hit")
+        plt.plot(date_labels, shallow_clone_miss_data, '-', color=Graph.red, label="Shallow Clone/Cache Miss")
+        plt.fill_between(date_labels, shallow_clone_hit_data, color=Graph.green, alpha=0.35)
+        plt.fill_between(date_labels, shallow_clone_miss_data, color=Graph.red, alpha=0.35)
+        plt.plot(date_labels, shallow_clone_all_data, '-', color=Graph.blue, label="All Shallow Clones")
+        plt.title(f"Shallow Clone Operations ({node})", fontdict={'fontweight': 'bold', 'fontsize': 20})
         plt.xlabel('')
         plt.legend()
         plt.xticks(date_labels[::24])
-        #plt.ylabel('Number of Fetches', fontdict={'fontweight': 'bold', 'fontsize': 14})
+        #plt.ylabel('Number of shallow_clones', fontdict={'fontweight': 'bold', 'fontsize': 14})
 
-        plt.savefig(f'{node}-fetches.jpg', dpi=500)
+        plt.savefig(f'{node}-shallow_shallow_clones.jpg', dpi=500)
         plt.clf()
-        return("Fetches")
-
-    def pushes(node, all_chrono_days, hourly_breakdown):
-        Graph.set_generic_graph_details()
-        push_all_data = []
-        date_labels = []
-        hours = range(0, 24)
-        for day in all_chrono_days:
-            for hour in hours:
-                date_to_use = f"{str(day)[:4]}-{str(day)[4:6]}-{str(day)[6:8]} {hour:02d}"
-                date_labels.append(str(date_to_use))
-                try:
-                    push_all_data.append(hourly_breakdown[day][hour]['total_pushes'])
-                except KeyError:
-                    # start of day may not be at 0 so this fills in the blanks to have a complete 24 hour day
-                    push_all_data.append(0)
-
-        plt.plot(date_labels, push_all_data, '-', color=Graph.cyan, label="All Pushes")
-        plt.fill_between(date_labels, push_all_data, color=Graph.cyan, alpha=0.35)
-        plt.title(f"push Operations ({node})", fontdict={'fontweight': 'bold', 'fontsize': 20})
-        plt.xlabel('')
-        plt.legend()
-        plt.xticks(date_labels[::24])
-        #plt.ylabel('Number of pushes', fontdict={'fontweight': 'bold', 'fontsize': 14})
-
-        plt.savefig(f'{node}-pushes.jpg', dpi=500)
-        plt.clf()
-        return("Pushes")
+        return("Shallow Clones")
 
     def ref_ads(node, all_chrono_days, hourly_breakdown):
         Graph.set_generic_graph_details()
@@ -203,11 +177,9 @@ class Graph:
         plt.clf()
         return("Ref Advertisements")
 
-    def shallow_clones(node, all_chrono_days, hourly_breakdown):
+    def fetches(node, all_chrono_days, hourly_breakdown):
         Graph.set_generic_graph_details()
-        shallow_clone_all_data = []
-        shallow_clone_hit_data = []
-        shallow_clone_miss_data = []
+        fetch_data = []
         date_labels = []
         hours = range(0, 24)
         for day in all_chrono_days:
@@ -215,29 +187,49 @@ class Graph:
                 date_to_use = f"{str(day)[:4]}-{str(day)[4:6]}-{str(day)[6:8]} {hour:02d}"
                 date_labels.append(str(date_to_use))
                 try:
-                    shallow_clone_all_data.append(hourly_breakdown[day][hour]['total_shallow_clones'] + hourly_breakdown[day][hour]['total_shallow_clone_misses'])
-                    shallow_clone_hit_data.append(hourly_breakdown[day][hour]['total_shallow_clones'])
-                    shallow_clone_miss_data.append(hourly_breakdown[day][hour]['total_shallow_clone_misses'])
+                    fetch_data.append(hourly_breakdown[day][hour]['total_fetches'])
                 except KeyError:
                     # start of day may not be at 0 so this fills in the blanks to have a complete 24 hour day
-                    shallow_clone_all_data.append(0)
-                    shallow_clone_hit_data.append(0)
-                    shallow_clone_miss_data.append(0)
+                    fetch_data.append(0)
 
-        plt.plot(date_labels, shallow_clone_hit_data, '-', color=Graph.green, label="Shallow Clone/Cache Hit")
-        plt.plot(date_labels, shallow_clone_miss_data, '-', color=Graph.red, label="Shallow Clone/Cache Miss")
-        plt.fill_between(date_labels, shallow_clone_hit_data, color=Graph.green, alpha=0.35)
-        plt.fill_between(date_labels, shallow_clone_miss_data, color=Graph.red, alpha=0.35)
-        plt.plot(date_labels, shallow_clone_all_data, '-', color=Graph.blue, label="All Shallow Clones")
-        plt.title(f"Shallow Clone Operations ({node})", fontdict={'fontweight': 'bold', 'fontsize': 20})
+        plt.plot(date_labels, fetch_data, '-', color=Graph.green, label="All Fetches")
+        plt.fill_between(date_labels, fetch_data, color=Graph.green, alpha=0.35)
+        plt.title(f"Fetch Operations ({node})", fontdict={'fontweight': 'bold', 'fontsize': 20})
         plt.xlabel('')
         plt.legend()
         plt.xticks(date_labels[::24])
-        #plt.ylabel('Number of shallow_clones', fontdict={'fontweight': 'bold', 'fontsize': 14})
+        #plt.ylabel('Number of Fetches', fontdict={'fontweight': 'bold', 'fontsize': 14})
 
-        plt.savefig(f'{node}-shallow_shallow_clones.jpg', dpi=500)
+        plt.savefig(f'{node}-fetches.jpg', dpi=500)
         plt.clf()
-        return("Shallow Clones")
+        return("Fetches")
+
+    def pushes(node, all_chrono_days, hourly_breakdown):
+        Graph.set_generic_graph_details()
+        push_all_data = []
+        date_labels = []
+        hours = range(0, 24)
+        for day in all_chrono_days:
+            for hour in hours:
+                date_to_use = f"{str(day)[:4]}-{str(day)[4:6]}-{str(day)[6:8]} {hour:02d}"
+                date_labels.append(str(date_to_use))
+                try:
+                    push_all_data.append(hourly_breakdown[day][hour]['total_pushes'])
+                except KeyError:
+                    # start of day may not be at 0 so this fills in the blanks to have a complete 24 hour day
+                    push_all_data.append(0)
+
+        plt.plot(date_labels, push_all_data, '-', color=Graph.cyan, label="All Pushes")
+        plt.fill_between(date_labels, push_all_data, color=Graph.cyan, alpha=0.35)
+        plt.title(f"push Operations ({node})", fontdict={'fontweight': 'bold', 'fontsize': 20})
+        plt.xlabel('')
+        plt.legend()
+        plt.xticks(date_labels[::24])
+        #plt.ylabel('Number of pushes', fontdict={'fontweight': 'bold', 'fontsize': 14})
+
+        plt.savefig(f'{node}-pushes.jpg', dpi=500)
+        plt.clf()
+        return("Pushes")
 
     def summary(node, all_chrono_days, hourly_breakdown):
         Graph.set_generic_graph_details()
@@ -254,7 +246,7 @@ class Graph:
                 try:
                     clone_data.append(hourly_breakdown[day][hour]['total_clones'] + hourly_breakdown[day][hour]['total_clone_misses'])
                     shallow_data.append(hourly_breakdown[day][hour]['total_shallow_clones'] + hourly_breakdown[day][hour]['total_shallow_clone_misses'])
-                    fetch_data.append(hourly_breakdown[day][hour]['total_fetches'] + hourly_breakdown[day][hour]['total_fetch_misses'])
+                    fetch_data.append(hourly_breakdown[day][hour]['total_fetches'])
                     push_data.append(hourly_breakdown[day][hour]['total_pushes'])
                 except KeyError:
                     # start of day may not be at 0 so this fills in the blanks to have a complete 24 hour day
@@ -347,14 +339,41 @@ class Graph:
                            "filesystem": int}
         '''
         Graph.set_generic_graph_details()
-        labels = ["git http", "git ssh", "rest", "web_ui", "filesystem"]
-        plt.pie([operations['git_http'], operations['git_ssh'], operations['rest'], operations['web_ui'], operations['filesystem']], labels=labels)
-        plt.title(f"Distribution of Operations ({node})")
-        #plt.xlabel('')
-        #plt.ylabel('')
+        labels, wedges = Graph.get_operation_decending_order(operations)
+        colors = [Graph.blue, Graph.green, Graph.cyan, Graph.yellow, Graph.red]
+        plt.pie(wedges, labels=labels, labeldistance=1.12, colors=colors, startangle=90, textprops={'fontweight': 'bold', 'fontsize': 12})
+        plt.title(f"Distribution of Operations ({node})", fontdict={'fontweight': 'bold', 'fontsize': 20})
+        plt.legend()
         plt.savefig(f'{node}-operations.jpg', dpi=500)
         plt.clf()
         return("Operations")
+
+    def get_operation_decending_order(operations):
+        keys = []
+        values = []
+        for key, value in operations.items():
+            if key == "git_http":
+                keys.append("Git HTTP")
+            elif key == "git_ssh":
+                keys.append("Git SSH")
+            elif key == "rest":
+                keys.append("REST API")
+            elif key == "web_ui":
+                keys.append("Web UI")
+            elif key == "filesystem":
+                keys.append("Filesystem")
+            values.append(value)
+        
+        sorted_keys = []
+        sorted_values = []
+        for x in range(len(operations)):
+            index = values.index(max(values))
+            sorted_keys.append(keys[index])
+            sorted_values.append(values[index])
+            del keys[index]
+            del values[index]
+
+        return sorted_keys, sorted_values
 
     def sort_top_repos(repo_stats):
         # Build out first 10 repos (!!! Requires Python3.6+ to ensure dict order !!!)
@@ -390,7 +409,7 @@ class Graph:
                 lowest_shallow_repo, lowest_shallow_count = Graph.find_lowest_shallow(top_shallows)
 
             # Fetches
-            if stats['total_fetches'] + stats['total_fetch_misses'] > lowest_fetch_count:
+            if stats['total_fetches'] > lowest_fetch_count:
                 del top_fetches[lowest_fetch_repo]
                 top_fetches[repo] = stats
                 lowest_fetch_repo, lowest_fetch_count = Graph.find_lowest_fetch(top_fetches)
@@ -433,7 +452,7 @@ class Graph:
         values = []
         repos = []
         for repo, stats in top_fetches.items():
-            values.append(stats['total_fetches'] + stats['total_fetch_misses'])
+            values.append(stats['total_fetches'])
             repos.append(repo)
         index = values.index(min(values))
 
@@ -461,7 +480,7 @@ class Graph:
 
     def sum_relevant_stats(stats):
         relevant_sum = stats['total_clones'] + stats['total_clone_misses'] + stats['total_shallow_clones'] + \
-                       stats['total_shallow_clone_misses'] + stats['total_fetches'] + stats['total_fetch_misses'] + stats['total_pushes']
+                       stats['total_shallow_clone_misses'] + stats['total_fetches'] + stats['total_pushes']
         return relevant_sum
 
     def top_clones(node, top_clones):
@@ -471,7 +490,7 @@ class Graph:
                     repo_identifier: {
                         "total_clones": 0, "total_clone_misses": 2,
                         "total_shallow_clones": 0, "total_shallow_clone_misses": 0,
-                        "total_fetches": 0, "total_fetch_misses": 0,
+                        "total_fetches": 0,
                         "total_ref_ads": 174663, "total_ref_ad_miss": 2,
                         "total_pushes": 0
                     }
@@ -479,8 +498,6 @@ class Graph:
             }
         '''
         Graph.set_generic_graph_details()
-        plt.figure(figsize=(16,10))
-        plt.subplots_adjust(top=0.96, bottom=0.05, left=0.04, right=0.99, wspace=0.9)
         # Build out top ten repos with most interactions (not counting refs)
         labels = []
         clones = []
@@ -488,7 +505,6 @@ class Graph:
         shallows = []
         shallow_misses = []
         fetches = []
-        fetch_misses = []
         pushes = []
 
         for repo, stats in top_clones.items():
@@ -498,7 +514,6 @@ class Graph:
             shallows.append(stats['total_shallow_clones'])
             shallow_misses.append(stats['total_shallow_clone_misses'])
             fetches.append(stats['total_fetches'])
-            fetch_misses.append(stats['total_fetch_misses'])
             pushes.append(stats['total_pushes'])
 
         index = np.arange(len(labels))
@@ -509,14 +524,10 @@ class Graph:
         p2 = plt.bar(index, shallows, width, bottom=0, color=Graph.green)
         p2sub = plt.bar(index, shallow_misses, width, bottom=shallows, color=Graph.lightgreen)
         p3 = plt.bar(index + width, fetches, width, color=Graph.red)
-        p3sub = plt.bar(index + width, fetch_misses, width, bottom=fetches, color=Graph.yellow)
         p4 = plt.bar(index + (width * 2), pushes, width, color=Graph.cyan)
 
         plt.xticks(ticks=(index + width / 2), labels=labels, fontsize=8)
-        #plt.set_xticks(index + width / 2)
-        #plt.set_xticklabels(labels)
-        plt.legend((p1[0], p1sub[0], p2[0], p2sub[0], p3[0], p3sub[0], p4[0]), ('Clones', 'Clone Cache Misses', 'Shallow Clones', 'Shallow Clone Cache Misses', 'Fetches', 'Fetch Cache Miss', 'Pushes'))
-
+        plt.legend((p1[0], p1sub[0], p2[0], p2sub[0], p3[0], p4[0]), ('Clones', 'Clone Cache Misses', 'Shallow Clones', 'Shallow Clone Cache Misses', 'Fetches', 'Pushes'))
         plt.title(f"Top Ten Cloned Repositories ({node})", fontdict={'fontweight': 'bold', 'fontsize': 20})
         plt.savefig(f'{node}-top_cloned.jpg', dpi=500)
         plt.clf()

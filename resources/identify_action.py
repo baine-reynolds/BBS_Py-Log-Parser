@@ -52,19 +52,19 @@ class IdentifyAction():
             git_action = "refs"
         elif "shallow" in labels: #shallow must be before 'clone' otherwise all shallows will get pooled in with clones
             if "fetch" in labels:
-                git_action = "fetch"
+                return("fetch")
             else:
                 git_action = "shallow"
         elif "clone" in labels:
             git_action = "clone"
         elif "fetch" in labels:
-            git_action = "fetch"
+            return("fetch")
         elif "archive" in labels:
             git_action = "ignore"
         elif "info/refs" in action:
             git_action = "refs"
         elif "git-upload-pack" in action:
-            git_action = "fetch"
+            return("fetch")
 
         cache = ""  # Cache hit by default
         if git_action == "" or git_action == "ignore":
