@@ -1,6 +1,6 @@
 from resources.identify_action import IdentifyAction
 import concurrent.futures
-import re
+
 
 class Parser:
     def start(list_of_access_logs, verbose):
@@ -31,9 +31,9 @@ class Parser:
         '''
         file_parsed = {}
         default_repo = {"clone": 0, "clone_miss": 0, "shallow": 0, "shallow_miss": 0,
-                        "fetch": 0, "refs": 0, "refs_miss": 0, "push": 0 }
+                        "fetch": 0, "refs": 0, "refs_miss": 0, "push": 0, "unclassified": 0}
         file_statistics = {"repo_stats": {}, "operations": {"git_http": 0, "git_ssh": 0, "rest": 0, "web_ui": 0, "filesystem": 0}}
-        #output_line_indicators = ['o@', 'o*']
+#        output_line_indicators = ['o@', 'o*']
         with open(path_to_access_log, 'r') as log:
             for line in log:
                 split = line.split(' | ')
@@ -41,7 +41,7 @@ class Parser:
                     if ("o@" in split[2] and len(split) > 12) or ("o*" in split[2] and len(split) > 12):
                         protocol, request_id, timestamp, action, status_code, labels = Parser.parse_raw_line(split)
                         day, hour = Parser.parse_timestamp(timestamp)
-                        parsed_action = IdentifyAction.parse(protocol, request_id, action, status_code, labels, verbose)                        
+                        parsed_action = IdentifyAction.parse(protocol, request_id, action, status_code, labels, verbose)
 
                         if day not in file_parsed.keys():
                             # add dict for day as place holder
@@ -55,14 +55,14 @@ class Parser:
                                 file_parsed[day][hour].append(parsed_action)
 
                         repo_identifier = Parser.identify_repo(parsed_action, action)
-                        if repo_identifier == None:
+                        if repo_identifier is None:
                             pass
                         else:
                             # if repo doesn't yet exist, initialize it
                             if parsed_action['op_action'] != "" and parsed_action['op_action'] != "ignore":
                                 if repo_identifier not in file_statistics['repo_stats'].keys():
                                     file_statistics['repo_stats'][repo_identifier] = default_repo.copy()
-                                file_statistics['repo_stats'][repo_identifier][parsed_action['op_action']] += 1                                                    
+                                file_statistics['repo_stats'][repo_identifier][parsed_action['op_action']] += 1
 
                         # file_statistics['operations'] increments
                         if parsed_action['git_type'] == "http":
@@ -87,12 +87,12 @@ class Parser:
         Parsed based on access log format:
         https://confluence.atlassian.com/bitbucketserverkb/how-to-read-the-bitbucket-server-log-formats-779171668.html
         '''
-        #ip_address = split[0]  # not used
+#        ip_address = split[0]  # not used
         protocol = split[1]
         request_id = split[2]
         timestamp = split[4]
         action = split[5]
-        #request_details = split[6]  # not used
+#        request_details = split[6]  # not used
         status_code = split[7]
         labels = split[10]
         return protocol, request_id, timestamp, action, status_code, labels
@@ -116,7 +116,7 @@ class Parser:
             temp = action.split("'/")[1].split("/")
             repo_identifier = str.join("/", (temp[0], temp[1])).split(".git")[0].strip("'").lower()
         else:
-               pass # Not a git operation
+            pass  # Not a git operation
         return repo_identifier
 
     def parse_timestamp(timestamp):
@@ -153,8 +153,9 @@ class Parser:
                     "total_webui_calls": 0,
                     "total_git_ssh_operations": 0,
                     "total_git_http_operations": 0,
-                    "highest_seen_concurrent_operations": 0 
-                   }
+                    "highest_seen_concurrent_operations": 0,
+                    "total_unclassified": 0
+                    }
 
         for day in file_parsed:
             if day not in file_summarized.keys():
@@ -174,6 +175,7 @@ class Parser:
                     elif action['op_action'] == "rest": file_summarized[day][hour]['total_rest_calls'] += 1
                     elif action['op_action'] == "filesystem": file_summarized[day][hour]['total_filesystem_calls'] += 1
                     elif action['op_action'] == "web_ui": file_summarized[day][hour]['total_webui_calls'] += 1
+                    elif action['op_action'] == "unclassified": file_summarized[day][hour]['total_unclassified'] += 1
 
                     if action['git_type'] == "ssh": file_summarized[day][hour]['total_git_ssh_operations'] += 1
                     elif action['git_type'] == "http": file_summarized[day][hour]['total_git_http_operations'] += 1
@@ -202,7 +204,8 @@ class Parser:
                          "total_webui_calls": 0,
                          "total_git_ssh_operations": 0,
                          "total_git_http_operations": 0,
-                         "highest_seen_concurrent_operations": 0
+                         "highest_seen_concurrent_operations": 0,
+                         "total_unclassified": 0
                          }
         default_repo = { "total_clones": 0,
                          "total_clone_misses": 0,
@@ -211,7 +214,8 @@ class Parser:
                          "total_fetches": 0,
                          "total_ref_ads": 0,
                          "total_ref_ad_misses": 0,
-                         "total_pushes" : 0
+                         "total_pushes" : 0,
+                         "total_unclassified": 0
                         }
         operations = { "git_http": 0,
                        "git_ssh": 0,
@@ -246,6 +250,7 @@ class Parser:
                     all_days[day][hour]['total_webui_calls'] += single_file_summarized[day][hour]['total_webui_calls']
                     all_days[day][hour]['total_git_ssh_operations'] += single_file_summarized[day][hour]['total_git_ssh_operations']
                     all_days[day][hour]['total_git_http_operations'] += single_file_summarized[day][hour]['total_git_http_operations']
+                    all_days[day][hour]['total_unclassified'] += single_file_summarized[day][hour]['total_unclassified']
                     if single_file_summarized[day][hour]['highest_seen_concurrent_operations'] > all_days[day][hour]['highest_seen_concurrent_operations']:
                         all_days[day][hour]['highest_seen_concurrent_operations'] = single_file_summarized[day][hour]['highest_seen_concurrent_operations']
 
@@ -262,6 +267,7 @@ class Parser:
                 all_repo_stats[repo_identifier]['total_ref_ads'] += single_file_statistics['repo_stats'][repo_identifier]['refs']
                 all_repo_stats[repo_identifier]['total_ref_ad_misses'] += single_file_statistics['repo_stats'][repo_identifier]['refs_miss']
                 all_repo_stats[repo_identifier]['total_pushes'] += single_file_statistics['repo_stats'][repo_identifier]['push']
+                all_repo_stats[repo_identifier]['total_unclassified'] += single_file_statistics['repo_stats'][repo_identifier]['unclassified']
 
             # Compile Operations stats
             operations['git_http'] += single_file_statistics['operations']['git_http']
