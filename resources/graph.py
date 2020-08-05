@@ -6,7 +6,7 @@ class Graph:
         all_chrono_days = Graph.sort_days(hourly_breakdown.keys())
 
         # Setup base graph details and colors
-        if dark_mode == True:
+        if dark_mode is True:
             Graph.set_colors_dark()
         else:
             Graph.set_colors_light()
@@ -225,7 +225,7 @@ class Graph:
         plt.xlabel('')
         plt.legend()
         plt.xticks(date_labels[::24])
-        #plt.ylabel('Number of pushes', fontdict={'fontweight': 'bold', 'fontsize': 14})
+#        plt.ylabel('Number of pushes', fontdict={'fontweight': 'bold', 'fontsize': 14})
 
         plt.savefig(f'{node}-pushes.jpg', dpi=500)
         plt.clf()
@@ -267,7 +267,7 @@ class Graph:
         plt.xlabel('')
         plt.legend()
         plt.xticks(date_labels[::24])
-        #plt.ylabel('Number of Git Operations', fontdict={'fontweight': 'bold', 'fontsize': 14})
+#        plt.ylabel('Number of Git Operations', fontdict={'fontweight': 'bold', 'fontsize': 14})
 
         plt.savefig(f'{node}-summary.jpg', dpi=500)
         plt.clf()
