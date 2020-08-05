@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import concurrent.futures
 
 class Graph:
     def graph_parsed(node, hourly_breakdown, system_stats, dark_mode, verbose):
@@ -11,31 +12,33 @@ class Graph:
         else:
             Graph.set_colors_light()
 
+        executor = concurrent.futures.ProcessPoolExecutor()
+        tasks = []
+
         # Line Graphs
-        Graph.clones(node, all_chrono_days, hourly_breakdown)
-        Graph.shallow_clones(node, all_chrono_days, hourly_breakdown)
-        Graph.ref_ads(node, all_chrono_days, hourly_breakdown)
-        Graph.fetches(node, all_chrono_days, hourly_breakdown)
-        Graph.pushes(node, all_chrono_days, hourly_breakdown)
-        Graph.ref_ads(node, all_chrono_days, hourly_breakdown)
-        Graph.summary(node, all_chrono_days, hourly_breakdown)
-        Graph.max_connections(node, all_chrono_days, hourly_breakdown)
-        Graph.protocols(node, all_chrono_days, hourly_breakdown)
+        tasks.append(executor.submit(Graph.clones, node, all_chrono_days, hourly_breakdown))
+        tasks.append(executor.submit(Graph.shallow_clones, node, all_chrono_days, hourly_breakdown))
+        tasks.append(executor.submit(Graph.ref_ads, node, all_chrono_days, hourly_breakdown))
+        tasks.append(executor.submit(Graph.fetches, node, all_chrono_days, hourly_breakdown))
+        tasks.append(executor.submit(Graph.pushes, node, all_chrono_days, hourly_breakdown))
+        tasks.append(executor.submit(Graph.unclassified, node, all_chrono_days, hourly_breakdown))
+        tasks.append(executor.submit(Graph.summary, node, all_chrono_days, hourly_breakdown))
+        tasks.append(executor.submit(Graph.max_connections, node, all_chrono_days, hourly_breakdown))
+        tasks.append(executor.submit(Graph.protocols, node, all_chrono_days, hourly_breakdown))
 
         # Pie Graphs
-        Graph.operations(node, system_stats['operations'])
-        plt.close('all')
+        tasks.append(executor.submit(Graph.operations, node, system_stats['operations']))
 
-        # Stacked and Grouped Bar Graphs for repos
         top_clones, top_shallows, top_fetches, top_pushes, top_activity = Graph.sort_top_repos(system_stats['repo_stats'])
 
-        Graph.top_clones(node, top_clones)
-        Graph.top_shallows(node, top_shallows)
-        Graph.top_fetches(node, top_fetches)
-        Graph.top_pushes(node, top_pushes)
-        Graph.top_activity(node, top_activity)
-        plt.close("all")
+        # Stacked and Grouped Bar Graphs for repos
+        tasks.append(executor.submit(Graph.top_clones, node, top_clones))
+        tasks.append(executor.submit(Graph.top_shallows, node, top_shallows))
+        tasks.append(executor.submit(Graph.top_fetches, node, top_fetches))
+        tasks.append(executor.submit(Graph.top_pushes, node, top_fetches))
+        tasks.append(executor.submit(Graph.top_activity, node, top_activity))
 
+        concurrent.futures.wait(tasks)
         return
 
     def sort_days(hourly_breakdown_keys):
@@ -52,6 +55,7 @@ class Graph:
         Graph.red='#940901'
         Graph.yellow='#a5ab03'
         Graph.cyan='#0295a8'
+        Graph.grey='#696866'
         Graph.plot_style = 'default'
 
     def set_colors_dark():
@@ -60,6 +64,7 @@ class Graph:
         Graph.red='#5e130e'
         Graph.yellow='#6f7314'
         Graph.cyan='#167682'
+        Graph.grey='#696866'
         Graph.plot_style = 'dark_background'
 
     def set_generic_graph_details():
@@ -221,7 +226,7 @@ class Graph:
 
         plt.plot(date_labels, push_all_data, '-', color=Graph.cyan, label="All Pushes")
         plt.fill_between(date_labels, push_all_data, color=Graph.cyan, alpha=0.35)
-        plt.title(f"push Operations ({node})", fontdict={'fontweight': 'bold', 'fontsize': 20})
+        plt.title(f"Push Operations ({node})", fontdict={'fontweight': 'bold', 'fontsize': 20})
         plt.xlabel('')
         plt.legend()
         plt.xticks(date_labels[::24])
@@ -231,12 +236,37 @@ class Graph:
         plt.clf()
         return("Pushes")
 
+    def unclassified(node, all_chrono_days, hourly_breakdown):
+        Graph.set_generic_graph_details()
+        unclassified_data = []
+        date_labels = []
+        hours = range(0,24)
+        for day in all_chrono_days:
+            for hour in hours:
+                date_to_use = f"{str(day)[:4]}-{str(day)[4:6]}-{str(day)[6:8]} {hour:02d}"
+                date_labels.append(str(date_to_use))
+                try:
+                    unclassified_data.append(hourly_breakdown[day][hour]['total_unclassified'])
+                except KeyError:
+                    unclassified_data.append(0)
+
+        plt.plot(date_labels, unclassified_data, '-', color=Graph.grey, label="All Unclassified Git Operations")
+        plt.fill_between(date_labels, unclassified_data, color=Graph.grey, alpha=0.35)
+        plt.title(f"Unclassified Operations ({node})", fontdict={'fontweight': 'bold', 'fontsize': 20})
+        plt.xlabel('')
+        plt.legend()
+        plt.xticks(date_labels[::24])
+        plt.savefig(f'{node}-unclassified.jpg', dpi=500)
+        plt.clf()
+        return("Unclassified")
+
     def summary(node, all_chrono_days, hourly_breakdown):
         Graph.set_generic_graph_details()
         clone_data = []
         shallow_data = []
         fetch_data = []
         push_data = []
+        unclassified_data = []
         date_labels = []
         hours = range(0, 24)
         for day in all_chrono_days:
@@ -248,17 +278,21 @@ class Graph:
                     shallow_data.append(hourly_breakdown[day][hour]['total_shallow_clones'] + hourly_breakdown[day][hour]['total_shallow_clone_misses'])
                     fetch_data.append(hourly_breakdown[day][hour]['total_fetches'])
                     push_data.append(hourly_breakdown[day][hour]['total_pushes'])
+                    unclassified_data.append(hourly_breakdown[day][hour]['total_unclassified'])
                 except KeyError:
                     # start of day may not be at 0 so this fills in the blanks to have a complete 24 hour day
                     clone_data.append(0)
                     shallow_data.append(0)
                     fetch_data.append(0)
                     push_data.append(0)
+                    unclassified_data.append(0)
 
+        plt.plot(date_labels, unclassified_data, '-', color=Graph.grey, label="All Unclassified Git Operations")
         plt.plot(date_labels, fetch_data, '-', color=Graph.green, label="All Fetches")
         plt.plot(date_labels, clone_data, '-', color=Graph.red, label="All Clones")
         plt.plot(date_labels, shallow_data, '-', color=Graph.yellow, label="All Shallow Clones")
         plt.plot(date_labels, push_data, '-', color=Graph.cyan, label="All Pushes")
+        plt.fill_between(date_labels, unclassified_data, color=Graph.grey, alpha=0.35)
         plt.fill_between(date_labels, fetch_data, color=Graph.green, alpha=0.35)
         plt.fill_between(date_labels, clone_data, color=Graph.red, alpha=0.35)
         plt.fill_between(date_labels, shallow_data, color=Graph.yellow, alpha=0.35)
@@ -506,6 +540,7 @@ class Graph:
         shallow_misses = []
         fetches = []
         pushes = []
+        unclassified = []
 
         for repo, stats in top_clones.items():
             labels.append(repo.replace('/', ' /\n'))
@@ -515,9 +550,10 @@ class Graph:
             shallow_misses.append(stats['total_shallow_clone_misses'])
             fetches.append(stats['total_fetches'])
             pushes.append(stats['total_pushes'])
+            unclassified.append(stats['total_unclassified'])
 
         index = np.arange(len(labels))
-        width = 0.2
+        width = 0.15
 
         p1 = plt.bar(index - width, clones, width, bottom=0, color=Graph.blue)
         p1sub = plt.bar(index - width, clone_misses, width, bottom=clones, color=Graph.lightblue)
@@ -525,16 +561,54 @@ class Graph:
         p2sub = plt.bar(index, shallow_misses, width, bottom=shallows, color=Graph.lightgreen)
         p3 = plt.bar(index + width, fetches, width, color=Graph.red)
         p4 = plt.bar(index + (width * 2), pushes, width, color=Graph.cyan)
+        p5 = plt.bar(index + (width * 3), unclassified, width, color=Graph.grey)
 
         plt.xticks(ticks=(index + width / 2), labels=labels, fontsize=8)
-        plt.legend((p1[0], p1sub[0], p2[0], p2sub[0], p3[0], p4[0]), ('Clones', 'Clone Cache Misses', 'Shallow Clones', 'Shallow Clone Cache Misses', 'Fetches', 'Pushes'))
+        plt.legend((p1[0], p1sub[0], p2[0], p2sub[0], p3[0], p4[0], p5[0]), ('Clones', 'Clone Cache Misses', 'Shallow Clones', 'Shallow Clone Cache Misses', 'Fetches', 'Pushes', 'Unclassified'))
         plt.title(f"Top Ten Cloned Repositories ({node})", fontdict={'fontweight': 'bold', 'fontsize': 20})
         plt.savefig(f'{node}-top_cloned.jpg', dpi=500)
         plt.clf()
-        return("Repo Statistics")
+        return("Top Clones")
 
     def top_shallows(node, top_shallows):
-        pass
+        Graph.set_generic_graph_details()
+        # Build out top ten repos with most interactions (not counting refs)
+        labels = []
+        clones = []
+        clone_misses = []
+        shallows = []
+        shallow_misses = []
+        fetches = []
+        pushes = []
+        unclassified = []
+
+        for repo, stats in top_shallows.items():
+            labels.append(repo.replace('/', ' /\n'))
+            clones.append(stats['total_clones'])
+            clone_misses.append(stats['total_clone_misses'])
+            shallows.append(stats['total_shallow_clones'])
+            shallow_misses.append(stats['total_shallow_clone_misses'])
+            fetches.append(stats['total_fetches'])
+            pushes.append(stats['total_pushes'])
+            unclassified.append(stats['total_unclassified'])
+
+        index = np.arange(len(labels))
+        width = 0.15
+
+        p1 = plt.bar(index - width, clones, width, bottom=0, color=Graph.blue)
+        p1sub = plt.bar(index - width, clone_misses, width, bottom=clones, color=Graph.lightblue)
+        p2 = plt.bar(index, shallows, width, bottom=0, color=Graph.green)
+        p2sub = plt.bar(index, shallow_misses, width, bottom=shallows, color=Graph.lightgreen)
+        p3 = plt.bar(index + width, fetches, width, color=Graph.red)
+        p4 = plt.bar(index + (width * 2), pushes, width, color=Graph.cyan)
+        p5 = plt.bar(index + (width * 3), unclassified, width, color=Graph.grey)
+
+        plt.xticks(ticks=(index + width / 2), labels=labels, fontsize=8)
+        plt.legend((p1[0], p1sub[0], p2[0], p2sub[0], p3[0], p4[0], p5[0]), ('Clones', 'Clone Cache Misses', 'Shallow Clones', 'Shallow Clone Cache Misses', 'Fetches', 'Pushes', 'Unclassified'))
+        plt.title(f"Top Ten Cloned Repositories ({node})", fontdict={'fontweight': 'bold', 'fontsize': 20})
+        plt.savefig(f'{node}-top_cloned.jpg', dpi=500)
+        plt.clf()
+        return("Top Shallows")
 
     def top_fetches(node, top_fetches):
         pass
