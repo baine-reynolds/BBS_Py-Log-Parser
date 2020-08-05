@@ -5,7 +5,7 @@ class IdentifyAction():
         Returns: dict{
                       "op_action": str(op_action),
                       "git_type": str(git_type),
-                      "max_connections: int(concurrent_connections) 
+                      "max_connections: int(concurrent_connections)
                      }
         '''
         op_action = ""
@@ -46,7 +46,6 @@ class IdentifyAction():
     def git_op_action(action, labels):
         git_action = ""
         if "push" in labels or "git-receive-pack" in action:
-            #git_action = "push"
             return("push")
         elif "refs" in labels:
             git_action = "refs"
@@ -64,13 +63,11 @@ class IdentifyAction():
         elif "info/refs" in action:
             git_action = "refs"
         elif "git-upload-pack" in action:
-            return("fetch")
+            return("unclassified")
 
         cache = ""  # Cache hit by default
         if git_action == "" or git_action == "ignore":
             pass
-        #elif "cache" not in labels:  # Server's too busy to add labels
-        #    cache = "_miss" # potentionally switch to "_busy"
         elif "hit" not in labels:  # Cache miss (Accounts for either a "bypass" or "miss")
             cache = "_miss"
 
@@ -79,8 +76,8 @@ class IdentifyAction():
 
     def http_webserver(op_type, verbose):
         ignore_list = ["/favicon.ico", "/avatar.png", "/system/maintenance", "/unavailable",
-                      "/j_atl_security_check", "/j_atl_security_logout", "/system/startup",
-                      "/getting-started", "/robots.txt"]
+                       "/j_atl_security_check", "/j_atl_security_logout", "/system/startup",
+                       "/getting-started", "/robots.txt"]
         rest_actions = ["/rest/api", "/rest/capabilities", "/status", "/api/v3/rate_limit"]
         filesystem_actions = ["/s/", "/download/"]
         webui_actions = ["/rest", "/admin", "/account", "/dashboard", "/mvc", "/projects", "/captcha",
@@ -96,7 +93,7 @@ class IdentifyAction():
         elif [x for x in filesystem_actions if(x in op_type)]:
             op_action = "filesystem"
         elif [x for x in webui_actions if(x in op_type)]:
-            op_action = "web_ui" 
+            op_action = "web_ui"
         elif op_type == "/":  # Exact match root of webserver
             op_action = "web_ui"
         else:
