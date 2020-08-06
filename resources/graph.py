@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import concurrent.futures
+from time import sleep
 
 class Graph:
     def graph_parsed(node, hourly_breakdown, system_stats, dark_mode, verbose):
@@ -12,33 +13,33 @@ class Graph:
         else:
             Graph.set_colors_light()
 
-        executor = concurrent.futures.ProcessPoolExecutor()
-        tasks = []
+        graph_executor = concurrent.futures.ProcessPoolExecutor()
+        graph_tasks = []
 
         # Line Graphs
-        tasks.append(executor.submit(Graph.clones, node, all_chrono_days, hourly_breakdown))
-        tasks.append(executor.submit(Graph.shallow_clones, node, all_chrono_days, hourly_breakdown))
-        tasks.append(executor.submit(Graph.ref_ads, node, all_chrono_days, hourly_breakdown))
-        tasks.append(executor.submit(Graph.fetches, node, all_chrono_days, hourly_breakdown))
-        tasks.append(executor.submit(Graph.pushes, node, all_chrono_days, hourly_breakdown))
-        tasks.append(executor.submit(Graph.unclassified, node, all_chrono_days, hourly_breakdown))
-        tasks.append(executor.submit(Graph.summary, node, all_chrono_days, hourly_breakdown))
-        tasks.append(executor.submit(Graph.max_connections, node, all_chrono_days, hourly_breakdown))
-        tasks.append(executor.submit(Graph.protocols, node, all_chrono_days, hourly_breakdown))
+        graph_tasks.append(graph_executor.submit(Graph.clones, node, all_chrono_days, hourly_breakdown))
+        graph_tasks.append(graph_executor.submit(Graph.shallow_clones, node, all_chrono_days, hourly_breakdown))
+        graph_tasks.append(graph_executor.submit(Graph.ref_ads, node, all_chrono_days, hourly_breakdown))
+        graph_tasks.append(graph_executor.submit(Graph.fetches, node, all_chrono_days, hourly_breakdown))
+        graph_tasks.append(graph_executor.submit(Graph.pushes, node, all_chrono_days, hourly_breakdown))
+        graph_tasks.append(graph_executor.submit(Graph.unclassified, node, all_chrono_days, hourly_breakdown))
+        graph_tasks.append(graph_executor.submit(Graph.summary, node, all_chrono_days, hourly_breakdown))
+        graph_tasks.append(graph_executor.submit(Graph.max_connections, node, all_chrono_days, hourly_breakdown))
+        graph_tasks.append(graph_executor.submit(Graph.protocols, node, all_chrono_days, hourly_breakdown))
 
         # Pie Graphs
-        tasks.append(executor.submit(Graph.operations, node, system_stats['operations']))
+        graph_tasks.append(graph_executor.submit(Graph.operations, node, system_stats['operations']))
 
         top_clones, top_shallows, top_fetches, top_pushes, top_activity = Graph.sort_top_repos(system_stats['repo_stats'])
 
         # Stacked and Grouped Bar Graphs for repos
-        tasks.append(executor.submit(Graph.top_clones, node, top_clones))
-        tasks.append(executor.submit(Graph.top_shallows, node, top_shallows))
-        tasks.append(executor.submit(Graph.top_fetches, node, top_fetches))
-        tasks.append(executor.submit(Graph.top_pushes, node, top_fetches))
-        tasks.append(executor.submit(Graph.top_activity, node, top_activity))
+        graph_tasks.append(graph_executor.submit(Graph.top_clones, node, top_clones))
+        graph_tasks.append(graph_executor.submit(Graph.top_shallows, node, top_shallows))
+        graph_tasks.append(graph_executor.submit(Graph.top_fetches, node, top_fetches))
+        graph_tasks.append(graph_executor.submit(Graph.top_pushes, node, top_fetches))
+        graph_tasks.append(graph_executor.submit(Graph.top_activity, node, top_activity))
 
-        concurrent.futures.wait(tasks)
+        graph_executor.shutdown(wait=True)
         return
 
     def sort_days(hourly_breakdown_keys):
@@ -108,7 +109,7 @@ class Graph:
 
         plt.savefig(f'{node}-clones.jpg', dpi=500)
         plt.clf()
-        return("Clones")
+        return "clones"
 
     def shallow_clones(node, all_chrono_days, hourly_breakdown):
         Graph.set_generic_graph_details()
@@ -144,7 +145,7 @@ class Graph:
 
         plt.savefig(f'{node}-shallow_shallow_clones.jpg', dpi=500)
         plt.clf()
-        return("Shallow Clones")
+        return "shallow"
 
     def ref_ads(node, all_chrono_days, hourly_breakdown):
         Graph.set_generic_graph_details()
@@ -180,7 +181,7 @@ class Graph:
 
         plt.savefig(f'{node}-refs.jpg', dpi=500)
         plt.clf()
-        return("Ref Advertisements")
+        return "refs"
 
     def fetches(node, all_chrono_days, hourly_breakdown):
         Graph.set_generic_graph_details()
@@ -207,7 +208,7 @@ class Graph:
 
         plt.savefig(f'{node}-fetches.jpg', dpi=500)
         plt.clf()
-        return("Fetches")
+        return "fetches"
 
     def pushes(node, all_chrono_days, hourly_breakdown):
         Graph.set_generic_graph_details()
@@ -234,7 +235,7 @@ class Graph:
 
         plt.savefig(f'{node}-pushes.jpg', dpi=500)
         plt.clf()
-        return("Pushes")
+        return "pushes"
 
     def unclassified(node, all_chrono_days, hourly_breakdown):
         Graph.set_generic_graph_details()
@@ -256,9 +257,10 @@ class Graph:
         plt.xlabel('')
         plt.legend()
         plt.xticks(date_labels[::24])
+
         plt.savefig(f'{node}-unclassified.jpg', dpi=500)
         plt.clf()
-        return("Unclassified")
+        return "unclassified"
 
     def summary(node, all_chrono_days, hourly_breakdown):
         Graph.set_generic_graph_details()
@@ -305,7 +307,7 @@ class Graph:
 
         plt.savefig(f'{node}-summary.jpg', dpi=500)
         plt.clf()
-        return("Summary")
+        return "summary"
 
     def max_connections(node, all_chrono_days, hourly_breakdown):
         Graph.set_generic_graph_details()
@@ -331,7 +333,7 @@ class Graph:
 
         plt.savefig(f'{node}-max_connections.jpg', dpi=500)
         plt.clf()
-        return("Max Connections")
+        return "max_connections"
 
     def protocols(node, all_chrono_days, hourly_breakdown):
         Graph.set_generic_graph_details()
@@ -360,7 +362,7 @@ class Graph:
 
         plt.savefig(f'{node}-protocols.jpg', dpi=500)
         plt.clf()
-        return("Git Protocols")
+        return "protocols"
 
     def operations(node, operations):
         '''
@@ -378,9 +380,10 @@ class Graph:
         plt.pie(wedges, labels=labels, labeldistance=1.12, colors=colors, startangle=90, textprops={'fontweight': 'bold', 'fontsize': 12})
         plt.title(f"Distribution of Operations ({node})", fontdict={'fontweight': 'bold', 'fontsize': 20})
         plt.legend()
+
         plt.savefig(f'{node}-operations.jpg', dpi=500)
         plt.clf()
-        return("Operations")
+        return "operations"
 
     def get_operation_decending_order(operations):
         keys = []
@@ -566,9 +569,10 @@ class Graph:
         plt.xticks(ticks=(index + width / 2), labels=labels, fontsize=8)
         plt.legend((p1[0], p1sub[0], p2[0], p2sub[0], p3[0], p4[0], p5[0]), ('Clones', 'Clone Cache Misses', 'Shallow Clones', 'Shallow Clone Cache Misses', 'Fetches', 'Pushes', 'Unclassified'))
         plt.title(f"Top Ten Cloned Repositories ({node})", fontdict={'fontweight': 'bold', 'fontsize': 20})
+
         plt.savefig(f'{node}-top_cloned.jpg', dpi=500)
         plt.clf()
-        return("Top Clones")
+        return "top_clones"
 
     def top_shallows(node, top_shallows):
         Graph.set_generic_graph_details()
@@ -605,16 +609,17 @@ class Graph:
 
         plt.xticks(ticks=(index + width / 2), labels=labels, fontsize=8)
         plt.legend((p1[0], p1sub[0], p2[0], p2sub[0], p3[0], p4[0], p5[0]), ('Clones', 'Clone Cache Misses', 'Shallow Clones', 'Shallow Clone Cache Misses', 'Fetches', 'Pushes', 'Unclassified'))
-        plt.title(f"Top Ten Cloned Repositories ({node})", fontdict={'fontweight': 'bold', 'fontsize': 20})
-        plt.savefig(f'{node}-top_cloned.jpg', dpi=500)
+        plt.title(f"Top Ten Shallow Cloned Repositories ({node})", fontdict={'fontweight': 'bold', 'fontsize': 20})
+
+        plt.savefig(f'{node}-top_shallow.jpg', dpi=500)
         plt.clf()
-        return("Top Shallows")
+        return "top_shallow"
 
     def top_fetches(node, top_fetches):
-        pass
+        return "top_fetches"
 
     def top_pushes(node, top_pushes):
-        pass
+        return "top_pushes"
 
     def top_activity(node, top_activity):
-        pass
+        return "top_activity"
