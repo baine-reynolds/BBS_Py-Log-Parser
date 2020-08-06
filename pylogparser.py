@@ -7,6 +7,7 @@ from os import remove
 import json
 import img2pdf
 
+
 def export_json(node, hourly_breakdown, system_stats):
     write_file = {}
     write_file[node] = [hourly_breakdown, system_stats]
@@ -17,7 +18,7 @@ def combine_png_to_pdf(node):
     base_dir = getcwd()
     graph_file_names = ["-clones.jpg", "-shallow_shallow_clones.jpg", "-refs.jpg",
                         "-fetches.jpg", "-pushes.jpg", "-unclassified.jpg", "-summary.jpg",
-                        "-max_connections.jpg", "-protocols.jpg", "-operations.jpg", "-top_cloned.jpg"]
+                        "-max_connections.jpg", "-protocols.jpg", "-operations.jpg", "-top_cloned.jpg", "-top_shallow.jpg"]
     with open(f'{node}.pdf', 'wb') as pdf_output:
         images_to_write = []
         for graph_name in graph_file_names:
