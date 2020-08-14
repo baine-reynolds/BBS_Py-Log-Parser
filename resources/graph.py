@@ -603,7 +603,83 @@ class Graph:
         return "top_shallow"
 
     def top_fetches(node, top_fetches):
+        Graph.set_generic_graph_details()
+        # Build out top ten repos with most interactions (not counting refs)
+        labels = []
+        clones = []
+        clone_misses = []
+        shallows = []
+        shallow_misses = []
+        fetches = []
+        pushes = []
+        unclassified = []
+
+        for repo, stats in top_fetches.items():
+            labels.append(repo.replace('/', ' /\n'))
+            clones.append(stats['total_clones'])
+            clone_misses.append(stats['total_clone_misses'])
+            shallows.append(stats['total_shallow_clones'])
+            shallow_misses.append(stats['total_shallow_clone_misses'])
+            fetches.append(stats['total_fetches'])
+            pushes.append(stats['total_pushes'])
+            unclassified.append(stats['total_unclassified'])
+
+        index = np.arange(len(labels))
+        width = 0.15
+
+        p1 = plt.bar(index - width, clones, width, bottom=0, color=Graph.blue)
+        p1sub = plt.bar(index - width, clone_misses, width, bottom=clones, color=Graph.lightblue)
+        p2 = plt.bar(index, shallows, width, bottom=0, color=Graph.green)
+        p2sub = plt.bar(index, shallow_misses, width, bottom=shallows, color=Graph.lightgreen)
+        p3 = plt.bar(index + width, fetches, width, color=Graph.red)
+        p4 = plt.bar(index + (width * 2), pushes, width, color=Graph.cyan)
+        p5 = plt.bar(index + (width * 3), unclassified, width, color=Graph.grey)
+
+        plt.xticks(ticks=(index + width / 2), labels=labels, fontsize=8)
+        plt.legend((p1[0], p1sub[0], p2[0], p2sub[0], p3[0], p4[0], p5[0]), ('Clones', 'Clone Cache Misses', 'Shallow Clones', 'Shallow Clone Cache Misses', 'Fetches', 'Pushes', 'Unclassified'))
+        plt.title(f"Top Ten Fetched Repositories ({node})", fontdict={'fontweight': 'bold', 'fontsize': 20})
+
+        plt.savefig(f'{node}-top_fetched.jpg', dpi=500)
+        plt.clf()
         return "top_fetches"
 
     def top_pushes(node, top_pushes):
+        Graph.set_generic_graph_details()
+        # Build out top ten repos with most interactions (not counting refs)
+        labels = []
+        clones = []
+        clone_misses = []
+        shallows = []
+        shallow_misses = []
+        fetches = []
+        pushes = []
+        unclassified = []
+
+        for repo, stats in top_pushes.items():
+            labels.append(repo.replace('/', ' /\n'))
+            clones.append(stats['total_clones'])
+            clone_misses.append(stats['total_clone_misses'])
+            shallows.append(stats['total_shallow_clones'])
+            shallow_misses.append(stats['total_shallow_clone_misses'])
+            fetches.append(stats['total_fetches'])
+            pushes.append(stats['total_pushes'])
+            unclassified.append(stats['total_unclassified'])
+
+        index = np.arange(len(labels))
+        width = 0.15
+
+        p1 = plt.bar(index - width, clones, width, bottom=0, color=Graph.blue)
+        p1sub = plt.bar(index - width, clone_misses, width, bottom=clones, color=Graph.lightblue)
+        p2 = plt.bar(index, shallows, width, bottom=0, color=Graph.green)
+        p2sub = plt.bar(index, shallow_misses, width, bottom=shallows, color=Graph.lightgreen)
+        p3 = plt.bar(index + width, fetches, width, color=Graph.red)
+        p4 = plt.bar(index + (width * 2), pushes, width, color=Graph.cyan)
+        p5 = plt.bar(index + (width * 3), unclassified, width, color=Graph.grey)
+
+        plt.xticks(ticks=(index + width / 2), labels=labels, fontsize=8)
+        plt.legend((p1[0], p1sub[0], p2[0], p2sub[0], p3[0], p4[0], p5[0]), ('Clones', 'Clone Cache Misses', 'Shallow Clones', 'Shallow Clone Cache Misses', 'Fetches', 'Pushes', 'Unclassified'))
+        plt.title(f"Top Ten Pushed Repositories ({node})", fontdict={'fontweight': 'bold', 'fontsize': 20})
+
+        plt.savefig(f'{node}-top_pushed.jpg', dpi=500)
+        plt.clf()
         return "top_pushes"
