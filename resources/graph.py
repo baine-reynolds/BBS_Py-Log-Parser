@@ -26,6 +26,7 @@ class Graph:
         graph_tasks.append(graph_executor.submit(Graph.summary, node, all_chrono_days, hourly_breakdown))
         graph_tasks.append(graph_executor.submit(Graph.max_connections, node, all_chrono_days, hourly_breakdown))
         graph_tasks.append(graph_executor.submit(Graph.protocols, node, all_chrono_days, hourly_breakdown))
+        plt.close('all')
 
         # Pie Graphs
         graph_tasks.append(graph_executor.submit(Graph.operations, node, system_stats['operations']))
@@ -37,7 +38,7 @@ class Graph:
         graph_tasks.append(graph_executor.submit(Graph.top_shallows, node, top_shallows))
         graph_tasks.append(graph_executor.submit(Graph.top_fetches, node, top_fetches))
         graph_tasks.append(graph_executor.submit(Graph.top_pushes, node, top_fetches))
-        graph_tasks.append(graph_executor.submit(Graph.top_activity, node, top_activity))
+        plt.close('all')
 
         graph_executor.shutdown(wait=True)
         return
@@ -214,7 +215,6 @@ class Graph:
                 try:
                     push_all_data.append(hourly_breakdown[day][hour]['total_pushes'])
                 except KeyError:
-                    # start of day may not be at 0 so this fills in the blanks to have a complete 24 hour day
                     push_all_data.append(0)
 
         plt.plot(date_labels, push_all_data, '-', color=Graph.cyan, label="All Pushes")
@@ -273,7 +273,6 @@ class Graph:
                     push_data.append(hourly_breakdown[day][hour]['total_pushes'])
                     unclassified_data.append(hourly_breakdown[day][hour]['total_unclassified'])
                 except KeyError:
-                    # start of day may not be at 0 so this fills in the blanks to have a complete 24 hour day
                     clone_data.append(0)
                     shallow_data.append(0)
                     fetch_data.append(0)
@@ -294,7 +293,6 @@ class Graph:
         plt.xlabel('')
         plt.legend()
         plt.xticks(date_labels[::24])
-#        plt.ylabel('Number of Git Operations', fontdict={'fontweight': 'bold', 'fontsize': 14})
 
         plt.savefig(f'{node}-summary.jpg', dpi=500)
         plt.clf()
@@ -312,7 +310,6 @@ class Graph:
                 try:
                     max_connections_data.append(hourly_breakdown[day][hour]['highest_seen_concurrent_operations'])
                 except KeyError:
-                    # start of day may not be at 0 so this fills in the blanks to have a complete 24 hour day
                     max_connections_data.append(0)
 
         plt.plot(date_labels, max_connections_data, '-', color=Graph.blue, label="Max Concurrent Connections")
@@ -340,7 +337,6 @@ class Graph:
                     ssh_operations_data.append(hourly_breakdown[day][hour]['total_git_ssh_operations'])
                     http_operations_data.append(hourly_breakdown[day][hour]['total_git_http_operations'])
                 except KeyError:
-                    # start of day may not be at 0 so this fills in the blanks to have a complete 24 hour day
                     ssh_operations_data.append(0)
                     http_operations_data.append(0)
 
@@ -611,6 +607,3 @@ class Graph:
 
     def top_pushes(node, top_pushes):
         return "top_pushes"
-
-    def top_activity(node, top_activity):
-        return "top_activity"
