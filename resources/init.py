@@ -36,7 +36,7 @@ class Init:
             else:
                 exit("Could not locate any access logs in given path. Please check the path and try again.")
         else:
-            exit("No path specificed, please use the '-d' flag with a path to the access logs.")
+            exit("No path specificed, please use the '-p' flag with a path to the access logs.")
 
     def identify_node(path_to_log, provided_path):
         # To ensure consistent pathing expectations, remove a tailing '/' from "provided_path" if present
