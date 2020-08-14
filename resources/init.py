@@ -11,6 +11,7 @@ class Init:
         parser.add_option('-j', '--json', dest='json', default=False, action="store_true", help='Exports raw data to json rather than graphing')
         parser.add_option('-d', '--dark', dest='dark_mode', default=False, action="store_true", help='Sets Graphs to use dark backdrops')
         parser.add_option('-v', '--verbose', dest='verbose', default=False, action="store_true", help='Sets verbose logging to enabled')
+        parser.add_option('-t', '--throttle-graph', dest='throttle_graph', default=None, action="store_const", const=1, help='Throttle Graph creation to a single CPU if encountering issues with graphing library')
         options, args = parser.parse_args()
         return options, args
 

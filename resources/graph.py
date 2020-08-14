@@ -1,11 +1,11 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import concurrent.futures
-from time import sleep
+
 
 class Graph:
-    def graph_parsed(node, hourly_breakdown, system_stats, dark_mode, verbose):
-        all_chrono_days = Graph.sort_days(hourly_breakdown.keys())
+    def graph_parsed(node, hourly_breakdown, system_stats, dark_mode, verbose, throttle_graph):
+        all_chrono_days = Graph.sort_days_chronologically(hourly_breakdown.keys())
 
         # Setup base graph details and colors
         if dark_mode is True:
@@ -13,7 +13,7 @@ class Graph:
         else:
             Graph.set_colors_light()
 
-        graph_executor = concurrent.futures.ProcessPoolExecutor()
+        graph_executor = concurrent.futures.ProcessPoolExecutor(max_workers=throttle_graph)
         graph_tasks = []
 
         # Line Graphs
@@ -42,7 +42,7 @@ class Graph:
         graph_executor.shutdown(wait=True)
         return
 
-    def sort_days(hourly_breakdown_keys):
+    def sort_days_chronologically(hourly_breakdown_keys):
         # list all days in chronoligical order
         all_chrono_days = list(hourly_breakdown_keys)
         all_chrono_days.sort()
@@ -91,7 +91,6 @@ class Graph:
                     clone_hit_data.append(hourly_breakdown[day][hour]['total_clones'])
                     clone_miss_data.append(hourly_breakdown[day][hour]['total_clone_misses'])
                 except KeyError:
-                    # start of day may not be at 0 so this fills in the blanks to have a complete 24 hour day
                     clone_all_data.append(0)
                     clone_hit_data.append(0)
                     clone_miss_data.append(0)
@@ -105,7 +104,6 @@ class Graph:
         plt.xlabel('')        
         plt.legend()
         plt.xticks(date_labels[::24])
-        #plt.ylabel('Number of Clones', fontdict={'fontweight': 'bold', 'fontsize': 14})
 
         plt.savefig(f'{node}-clones.jpg', dpi=500)
         plt.clf()
@@ -127,7 +125,6 @@ class Graph:
                     shallow_clone_hit_data.append(hourly_breakdown[day][hour]['total_shallow_clones'])
                     shallow_clone_miss_data.append(hourly_breakdown[day][hour]['total_shallow_clone_misses'])
                 except KeyError:
-                    # start of day may not be at 0 so this fills in the blanks to have a complete 24 hour day
                     shallow_clone_all_data.append(0)
                     shallow_clone_hit_data.append(0)
                     shallow_clone_miss_data.append(0)
@@ -141,7 +138,6 @@ class Graph:
         plt.xlabel('')
         plt.legend()
         plt.xticks(date_labels[::24])
-        #plt.ylabel('Number of shallow_clones', fontdict={'fontweight': 'bold', 'fontsize': 14})
 
         plt.savefig(f'{node}-shallow_shallow_clones.jpg', dpi=500)
         plt.clf()
@@ -163,7 +159,6 @@ class Graph:
                     ref_ad_hit_data.append(hourly_breakdown[day][hour]['total_ref_ads'])
                     ref_ad_miss_data.append(hourly_breakdown[day][hour]['total_ref_ad_misses'])
                 except KeyError:
-                    # start of day may not be at 0 so this fills in the blanks to have a complete 24 hour day
                     ref_ad_all_data.append(0)
                     ref_ad_hit_data.append(0)
                     ref_ad_miss_data.append(0)
@@ -177,7 +172,6 @@ class Graph:
         plt.xlabel('')
         plt.legend()
         plt.xticks(date_labels[::24])
-        #plt.ylabel('Number of refs', fontdict={'fontweight': 'bold', 'fontsize': 14})
 
         plt.savefig(f'{node}-refs.jpg', dpi=500)
         plt.clf()
@@ -195,7 +189,6 @@ class Graph:
                 try:
                     fetch_data.append(hourly_breakdown[day][hour]['total_fetches'])
                 except KeyError:
-                    # start of day may not be at 0 so this fills in the blanks to have a complete 24 hour day
                     fetch_data.append(0)
 
         plt.plot(date_labels, fetch_data, '-', color=Graph.green, label="All Fetches")
@@ -204,7 +197,6 @@ class Graph:
         plt.xlabel('')
         plt.legend()
         plt.xticks(date_labels[::24])
-        #plt.ylabel('Number of Fetches', fontdict={'fontweight': 'bold', 'fontsize': 14})
 
         plt.savefig(f'{node}-fetches.jpg', dpi=500)
         plt.clf()
@@ -231,7 +223,6 @@ class Graph:
         plt.xlabel('')
         plt.legend()
         plt.xticks(date_labels[::24])
-#        plt.ylabel('Number of pushes', fontdict={'fontweight': 'bold', 'fontsize': 14})
 
         plt.savefig(f'{node}-pushes.jpg', dpi=500)
         plt.clf()
