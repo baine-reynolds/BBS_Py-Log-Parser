@@ -4,11 +4,11 @@ This tool will primarily parse out git operations and graph them for statistics 
 # Usage:
 Run the "pylogparser.py" file pointed at the "application-logs" directory from a Bitbucket support zip to build several graphs on the usage statistics of the environment.
 
-        python3 plugin-checker.py -p /path/to/application-logs
+        python3 pylogparser.py -p /path/to/application-logs
 
 You can also pass a directory which contains multiple support zips and the tool will then name each pdf created based on the folder directory naming. For Example, if you were to use the path:
 
-        python3 plugin-checker.py -p /home/<user-name>/Downloads/multi-nodes
+        python3 pylogparser.py -p /home/<user-name>/Downloads/multi-nodes
     
 Where "multi-nodes" is a directory containing...
 
