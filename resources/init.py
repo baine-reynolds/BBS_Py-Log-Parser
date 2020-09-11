@@ -11,7 +11,7 @@ class Init:
         parser.add_option('-j', '--json', dest='json', default=False, action="store_true", help='Exports raw data to json rather than graphing')
         parser.add_option('-d', '--dark', dest='dark_mode', default=False, action="store_true", help='Sets Graphs to use dark backdrops')
         parser.add_option('-v', '--verbose', dest='verbose', default=False, action="store_true", help='Sets verbose logging to enabled')
-        parser.add_option('-t', '--throttle-graph', dest='throttle_graph', default=1, action="store_const", const=None, help='Graphs are created in a single process by default, ' +
+        parser.add_option('-t', '--throttle-graph', dest='throttle_graph', default=False, action="store_true", help='Graphs are created in a single process by default, ' +
                           'this flag will open max_workers to "None". !!WARNING!! This does not work on many systems due to the graphing library not being multi-process stable.')
         options, args = parser.parse_args()
         return options, args

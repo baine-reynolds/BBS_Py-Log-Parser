@@ -15,34 +15,51 @@ class Graph:
         else:
             Graph.set_colors_light()
 
-        graph_executor = concurrent.futures.ProcessPoolExecutor(max_workers=throttle_graph)
-        graph_tasks = []
+        if throttle_graph:
+            graph_executor = concurrent.futures.ProcessPoolExecutor(max_workers=throttle_graph)
+            graph_tasks = []
+            # Line Graphs
+            graph_tasks.append(graph_executor.submit(Graph.clones, node, all_chrono_days, hourly_breakdown))
+            graph_tasks.append(graph_executor.submit(Graph.shallow_clones, node, all_chrono_days, hourly_breakdown))
+            graph_tasks.append(graph_executor.submit(Graph.ref_ads, node, all_chrono_days, hourly_breakdown))
+            graph_tasks.append(graph_executor.submit(Graph.fetches, node, all_chrono_days, hourly_breakdown))
+            graph_tasks.append(graph_executor.submit(Graph.pushes, node, all_chrono_days, hourly_breakdown))
+            graph_tasks.append(graph_executor.submit(Graph.unclassified, node, all_chrono_days, hourly_breakdown))
+            graph_tasks.append(graph_executor.submit(Graph.summary, node, all_chrono_days, hourly_breakdown))
+            graph_tasks.append(graph_executor.submit(Graph.max_connections, node, all_chrono_days, hourly_breakdown))
+            graph_tasks.append(graph_executor.submit(Graph.protocols, node, all_chrono_days, hourly_breakdown))
+            plt.close('all')
+            # Pie Graphs
+            graph_tasks.append(graph_executor.submit(Graph.operations, node, system_stats['operations']))
+            top_clones, top_shallows, top_fetches, top_pushes, top_activity = Graph.sort_top_repos(system_stats['repo_stats'])
+            # Stacked and Grouped Bar Graphs for repos
+            graph_tasks.append(graph_executor.submit(Graph.top_clones, node, top_clones))
+            graph_tasks.append(graph_executor.submit(Graph.top_shallows, node, top_shallows))
+            graph_tasks.append(graph_executor.submit(Graph.top_fetches, node, top_fetches))
+            graph_tasks.append(graph_executor.submit(Graph.top_pushes, node, top_fetches))
+            plt.close('all')
+            graph_executor.shutdown(wait=True)
+        else:
+            #do not use multi-processing to prevent bug in graphing
+            Graph.clones(node, all_chrono_days, hourly_breakdown)
+            Graph.shallow_clones(node, all_chrono_days, hourly_breakdown)
+            Graph.ref_ads(node, all_chrono_days, hourly_breakdown)
+            Graph.fetches(node, all_chrono_days, hourly_breakdown)
+            Graph.pushes(node, all_chrono_days, hourly_breakdown)
+            Graph.unclassified(node, all_chrono_days, hourly_breakdown)
+            Graph.summary(node, all_chrono_days, hourly_breakdown)
+            Graph.max_connections(node, all_chrono_days, hourly_breakdown)
+            Graph.protocols(node, all_chrono_days, hourly_breakdown)
+            plt.close('all')
 
-        # Line Graphs
-        graph_tasks.append(graph_executor.submit(Graph.clones, node, all_chrono_days, hourly_breakdown))
-        graph_tasks.append(graph_executor.submit(Graph.shallow_clones, node, all_chrono_days, hourly_breakdown))
-        graph_tasks.append(graph_executor.submit(Graph.ref_ads, node, all_chrono_days, hourly_breakdown))
-        graph_tasks.append(graph_executor.submit(Graph.fetches, node, all_chrono_days, hourly_breakdown))
-        graph_tasks.append(graph_executor.submit(Graph.pushes, node, all_chrono_days, hourly_breakdown))
-        graph_tasks.append(graph_executor.submit(Graph.unclassified, node, all_chrono_days, hourly_breakdown))
-        graph_tasks.append(graph_executor.submit(Graph.summary, node, all_chrono_days, hourly_breakdown))
-        graph_tasks.append(graph_executor.submit(Graph.max_connections, node, all_chrono_days, hourly_breakdown))
-        graph_tasks.append(graph_executor.submit(Graph.protocols, node, all_chrono_days, hourly_breakdown))
-        plt.close('all')
+            Graph.operations(node, system_stats['operations'])
+            top_clones, top_shallows, top_fetches, top_pushes, top_activity = Graph.sort_top_repos(system_stats['repo_stats'])
 
-        # Pie Graphs
-        graph_tasks.append(graph_executor.submit(Graph.operations, node, system_stats['operations']))
-
-        top_clones, top_shallows, top_fetches, top_pushes, top_activity = Graph.sort_top_repos(system_stats['repo_stats'])
-
-        # Stacked and Grouped Bar Graphs for repos
-        graph_tasks.append(graph_executor.submit(Graph.top_clones, node, top_clones))
-        graph_tasks.append(graph_executor.submit(Graph.top_shallows, node, top_shallows))
-        graph_tasks.append(graph_executor.submit(Graph.top_fetches, node, top_fetches))
-        graph_tasks.append(graph_executor.submit(Graph.top_pushes, node, top_fetches))
-        plt.close('all')
-
-        graph_executor.shutdown(wait=True)
+            Graph.top_clones(node, top_clones)
+            Graph.top_shallows(node, top_clones)
+            Graph.top_fetches(node, top_clones)
+            Graph.top_pushes(node, top_clones)
+            plt.close('all')
         return
 
     def sort_days_chronologically(hourly_breakdown_keys):
