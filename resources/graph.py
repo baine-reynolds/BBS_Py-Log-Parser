@@ -9,7 +9,9 @@ class Graph:
 
         # Setup base graph details and colors
         if dark_mode is True:
-            Graph.set_colors_dark()
+            #Graph.set_colors_dark()
+            print("Dark Mode not implemented yet")
+            Graph.set_colors_light()
         else:
             Graph.set_colors_light()
 
